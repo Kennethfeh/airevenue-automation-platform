@@ -46,3 +46,5 @@ __pycache__/
 
 # Logs
 *.log
+# Local Netlify folder
+.netlify
