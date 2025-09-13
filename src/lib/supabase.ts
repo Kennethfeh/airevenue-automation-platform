@@ -1,0 +1,295 @@
+import { createClient } from '@supabase/supabase-js'
+import { Database } from '@/types/database.types'
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_KEY!
+
+if (!supabaseUrl || !supabaseAnonKey) {
+  throw new Error('Missing Supabase environment variables')
+}
+
+// Client-side Supabase instance
+export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    persistSession: true,
+    autoRefreshToken: true,
+    detectSessionInUrl: true
+  },
+  global: {
+    headers: {
+      'X-Client-Info': 'airevenue-automation-platform'
+    }
+  }
+})
+
+// Server-side Supabase instance (with service role key)
+export const supabaseAdmin = createClient<Database>(supabaseUrl, supabaseServiceKey, {
+  auth: {
+    autoRefreshToken: false,
+    persistSession: false
+  },
+  global: {
+    headers: {
+      'X-Client-Info': 'airevenue-automation-platform-admin'
+    }
+  }
+})
+
+// Type-safe database helpers
+export type Tables = Database['public']['Tables']
+export type Prospect = Tables['prospects']['Row']
+export type Client = Tables['clients']['Row']
+export type Profile = Tables['profiles']['Row']
+export type Chatbot = Tables['chatbots']['Row']
+export type Conversation = Tables['conversations']['Row']
+export type AnalyticsEvent = Tables['analytics_events']['Row']
+export type BillingRecord = Tables['billing_records']['Row']
+export type Integration = Tables['integrations']['Row']
+export type AuditLog = Tables['audit_logs']['Row']
+
+// Database operations
+export class DatabaseService {
+  constructor(private client = supabase) {}
+
+  // Prospects
+  async createProspect(prospect: Tables['prospects']['Insert']) {
+    const { data, error } = await ((this.client as any)
+      .from('prospects')
+      .insert(prospect)
+      .select()
+      .single())
+    
+    if (error) throw error
+    return data
+  }
+
+  async getProspects(filters?: { status?: string; industry?: string }) {
+    let query = this.client.from('prospects').select('*')
+    
+    if (filters?.status) {
+      query = query.eq('status', filters.status)
+    }
+    if (filters?.industry) {
+      query = query.eq('industry', filters.industry)
+    }
+    
+    const { data, error } = await query.order('created_at', { ascending: false })
+    
+    if (error) throw error
+    return data
+  }
+
+  async updateProspect(id: string, updates: Tables['prospects']['Update']) {
+    const { data, error } = await ((this.client as any)
+      .from('prospects')
+      .update(updates)
+      .eq('id', id)
+      .select()
+      .single())
+    
+    if (error) throw error
+    return data
+  }
+
+  // Clients
+  async createClient(client: Tables['clients']['Insert']) {
+    const { data, error } = await ((this.client as any)
+      .from('clients')
+      .insert(client)
+      .select()
+      .single())
+    
+    if (error) throw error
+    return data
+  }
+
+  async getClients(filters?: { status?: string; plan_type?: string }) {
+    let query = this.client.from('clients').select(`
+      *,
+      profile:profiles(full_name, email, avatar_url),
+      chatbots(id, name, status, total_conversations)
+    `)
+    
+    if (filters?.status) {
+      query = query.eq('status', filters.status)
+    }
+    if (filters?.plan_type) {
+      query = query.eq('plan_type', filters.plan_type)
+    }
+    
+    const { data, error } = await query.order('created_at', { ascending: false })
+    
+    if (error) throw error
+    return data
+  }
+
+  async updateClient(id: string, updates: Tables['clients']['Update']) {
+    const { data, error } = await ((this.client as any)
+      .from('clients')
+      .update(updates)
+      .eq('id', id)
+      .select()
+      .single())
+    
+    if (error) throw error
+    return data
+  }
+
+  // Chatbots
+  async createChatbot(chatbot: Tables['chatbots']['Insert']) {
+    const { data, error } = await ((this.client as any)
+      .from('chatbots')
+      .insert(chatbot)
+      .select()
+      .single())
+    
+    if (error) throw error
+    return data
+  }
+
+  async getChatbotsByClient(clientId: string) {
+    const { data, error } = await ((this.client as any)
+      .from('chatbots')
+      .select('*')
+      .eq('client_id', clientId)
+      .order('created_at', { ascending: false }))
+    
+    if (error) throw error
+    return data
+  }
+
+  async updateChatbot(id: string, updates: Tables['chatbots']['Update']) {
+    const { data, error } = await ((this.client as any)
+      .from('chatbots')
+      .update(updates)
+      .eq('id', id)
+      .select()
+      .single())
+    
+    if (error) throw error
+    return data
+  }
+
+  // Conversations
+  async createConversation(conversation: Tables['conversations']['Insert']) {
+    const { data, error } = await ((this.client as any)
+      .from('conversations')
+      .insert(conversation)
+      .select()
+      .single())
+    
+    if (error) throw error
+    return data
+  }
+
+  async getConversationsByClient(clientId: string, limit = 50) {
+    const { data, error } = await ((this.client as any)
+      .from('conversations')
+      .select(`
+        *,
+        chatbot:chatbots!inner(name, client_id)
+      `)
+      .eq('chatbot.client_id', clientId)
+      .order('created_at', { ascending: false })
+      .limit(limit))
+    
+    if (error) throw error
+    return data
+  }
+
+  async updateConversation(id: string, updates: Tables['conversations']['Update']) {
+    const { data, error } = await ((this.client as any)
+      .from('conversations')
+      .update(updates)
+      .eq('id', id)
+      .select()
+      .single())
+    
+    if (error) throw error
+    return data
+  }
+
+  // Analytics
+  async trackEvent(event: Tables['analytics_events']['Insert']) {
+    const { data, error } = await ((this.client as any)
+      .from('analytics_events')
+      .insert(event)
+      .select()
+      .single())
+    
+    if (error) throw error
+    return data
+  }
+
+  async getAnalytics(clientId: string, dateRange: { start: string; end: string }) {
+    const { data, error } = await ((this.client as any)
+      .from('analytics_events')
+      .select('*')
+      .eq('client_id', clientId)
+      .gte('timestamp', dateRange.start)
+      .lte('timestamp', dateRange.end)
+      .order('timestamp', { ascending: false }))
+    
+    if (error) throw error
+    return data
+  }
+
+  // Billing
+  async createBillingRecord(billing: Tables['billing_records']['Insert']) {
+    const { data, error } = await ((this.client as any)
+      .from('billing_records')
+      .insert(billing)
+      .select()
+      .single())
+    
+    if (error) throw error
+    return data
+  }
+
+  async getBillingRecords(clientId: string) {
+    const { data, error } = await ((this.client as any)
+      .from('billing_records')
+      .select('*')
+      .eq('client_id', clientId)
+      .order('created_at', { ascending: false }))
+    
+    if (error) throw error
+    return data
+  }
+
+  // Integrations
+  async createIntegration(integration: Tables['integrations']['Insert']) {
+    const { data, error } = await ((this.client as any)
+      .from('integrations')
+      .insert(integration)
+      .select()
+      .single())
+    
+    if (error) throw error
+    return data
+  }
+
+  async getIntegrations(clientId: string) {
+    const { data, error } = await ((this.client as any)
+      .from('integrations')
+      .select('*')
+      .eq('client_id', clientId)
+      .order('created_at', { ascending: false }))
+    
+    if (error) throw error
+    return data
+  }
+
+  // Audit Logs
+  async logAuditEvent(log: Tables['audit_logs']['Insert']) {
+    const { data, error } = await ((this.client as any)
+      .from('audit_logs')
+      .insert(log)
+      .select()
+      .single())
+    
+    if (error) throw error
+    return data
+  }
+}
