@@ -1,4 +1,8 @@
 import { Metadata } from 'next'
+import { MainNav } from '@/components/navigation/main-nav'
+import { MainFooter } from '@/components/footer/main-footer'
+import { TrustIndicators } from '@/components/trust/trust-indicators'
+import { NewsletterSignup } from '@/components/lead-magnets/newsletter-signup'
 import { ZapierHero } from '@/components/features/prospect/zapier-hero'
 import { ClientLogosRow } from '@/components/features/prospect/client-logos-row'
 import { ClientSuccessStories } from '@/components/features/prospect/client-success-stories'
@@ -108,16 +112,25 @@ export default function LandingPage() {
   };
 
   return (
-    <>
+    <div className="min-h-screen bg-white">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
       />
       <LandingPageTracker />
-      <main className="min-h-screen" role="main">
+      
+      {/* Navigation */}
+      <MainNav />
+      
+      <main role="main">
         {/* Hero Section */}
         <section aria-labelledby="hero-heading">
           <ZapierHero />
+        </section>
+        
+        {/* Trust Indicators */}
+        <section aria-labelledby="trust-indicators-heading">
+          <TrustIndicators />
         </section>
         
         {/* Client Logos Row */}
@@ -165,6 +178,13 @@ export default function LandingPage() {
           <IntegrationMarketplace />
         </section>
         
+        {/* Newsletter Signup */}
+        <section aria-labelledby="newsletter-heading" className="py-16">
+          <div className="container-xl px-4 sm:px-6 lg:px-8">
+            <NewsletterSignup />
+          </div>
+        </section>
+        
         {/* Pricing Information */}
         <section aria-labelledby="pricing-heading">
           <PricingSection />
@@ -175,6 +195,9 @@ export default function LandingPage() {
           <FAQSection />
         </section>
       </main>
-    </>
+      
+      {/* Footer */}
+      <MainFooter />
+    </div>
   )
 }
