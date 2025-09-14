@@ -63,7 +63,7 @@ export const MainNav: React.FC = () => {
                     transition={{ duration: 0.2 }}
                     onMouseEnter={() => setIsProductsOpen(true)}
                     onMouseLeave={() => setIsProductsOpen(false)}
-                    className="absolute top-full left-0 mt-2 w-80 bg-white rounded-lg shadow-xl border border-gray-200 p-4"
+                    className="absolute top-full left-0 mt-2 w-80 max-w-[90vw] bg-white rounded-lg shadow-xl border border-gray-200 p-4 z-50"
                   >
                     <div className="space-y-3">
                       {productsItems.map((item) => (
@@ -110,7 +110,7 @@ export const MainNav: React.FC = () => {
                     transition={{ duration: 0.2 }}
                     onMouseEnter={() => setIsResourcesOpen(true)}
                     onMouseLeave={() => setIsResourcesOpen(false)}
-                    className="absolute top-full left-0 mt-2 w-80 bg-white rounded-lg shadow-xl border border-gray-200 p-4"
+                    className="absolute top-full left-0 mt-2 w-80 max-w-[90vw] bg-white rounded-lg shadow-xl border border-gray-200 p-4 z-50"
                   >
                     <div className="space-y-3">
                       {resourcesItems.map((item) => (
