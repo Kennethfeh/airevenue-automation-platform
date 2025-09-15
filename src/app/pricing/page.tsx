@@ -6,86 +6,116 @@ import { Check, X, Phone, Calendar, Zap, Shield, Headphones, TrendingUp } from '
 import Link from 'next/link'
 import { MainNav } from '@/components/navigation/main-nav'
 import { MainFooter } from '@/components/footer/main-footer'
+import { PricingButton } from '@/components/payments/paddle-button'
 
 export default function PricingPage() {
   const [isAnnual, setIsAnnual] = useState(true)
 
   const plans = [
     {
-      name: 'Starter',
-      description: 'Perfect for small businesses getting started with automation',
-      monthlyPrice: 299,
-      annualPrice: 2990,
-      savings: '2 months free',
+      name: 'Free Analysis',
+      productKey: 'freeAnalysis' as const,
+      description: 'Complete business automation assessment to identify savings opportunities',
+      price: 0,
+      originalPrice: 497,
+      savings: 'Limited time offer',
       features: [
-        'Up to 1,000 automated interactions/month',
-        'Basic AI customer service',
-        'Email workflow automation',
-        '5 custom integrations',
-        'Standard support (24h response)',
-        'Basic analytics dashboard',
-        'SSL security',
-        '99.5% uptime SLA'
+        'Comprehensive business process analysis',
+        '30-minute strategy consultation call',
+        'Custom automation roadmap',
+        'ROI calculations and projections',
+        'Priority workflow identification',
+        'Implementation timeline',
+        'Cost-benefit analysis report',
+        'Next steps recommendation'
       ],
       notIncluded: [
-        'Advanced AI training',
-        'Custom workflows',
-        'Priority support',
+        'Implementation services',
+        'Custom development',
+        'Ongoing support'
+      ],
+      cta: 'Get Free Analysis',
+      popular: false,
+      badge: 'FREE'
+    },
+    {
+      name: 'Strategy Consultation',
+      productKey: 'consultation' as const,
+      description: '1-on-1 deep-dive session with automation expert to plan your transformation',
+      price: 497,
+      originalPrice: 997,
+      savings: '50% off regular price',
+      features: [
+        '90-minute private strategy session',
+        'Senior automation consultant assigned',
+        'Detailed implementation blueprint',
+        'Technology stack recommendations',
+        'Team training requirements analysis',
+        'Risk assessment and mitigation plan',
+        'Budget planning and ROI projections',
+        'Follow-up support for 30 days',
+        'Priority booking for implementation'
+      ],
+      notIncluded: [
+        'Actual implementation',
+        'Custom development',
+        'Ongoing management'
+      ],
+      cta: 'Book Consultation',
+      popular: true,
+      badge: 'MOST POPULAR'
+    },
+    {
+      name: 'Starter Package',
+      productKey: 'starter' as const,
+      description: 'Complete automation setup for small to medium businesses',
+      price: 7997,
+      originalPrice: 12997,
+      savings: '$5,000 savings',
+      features: [
+        'Complete business process automation',
+        'AI customer service implementation',
+        'Workflow automation setup',
+        'Up to 5 system integrations',
+        '3 months of premium support',
+        'Team training and onboarding',
+        'Performance monitoring dashboard',
+        'Monthly optimization sessions',
+        'Success guarantee - ROI within 90 days'
+      ],
+      notIncluded: [
+        'Custom AI model development',
+        'White-label solutions',
         'Dedicated account manager'
       ],
-      cta: 'Start Free Trial',
-      popular: false
+      cta: 'Get Started',
+      popular: false,
+      badge: 'BEST VALUE'
     },
     {
-      name: 'Professional',
-      description: 'Ideal for growing companies ready to scale automation',
-      monthlyPrice: 799,
-      annualPrice: 7990,
-      savings: '2 months free',
+      name: 'Professional Package',
+      productKey: 'professional' as const,
+      description: 'Enterprise-grade automation solution with dedicated support',
+      price: 12997,
+      originalPrice: 19997,
+      savings: '$7,000 savings',
       features: [
-        'Up to 10,000 automated interactions/month',
-        'Advanced AI customer service',
-        'Complete workflow automation',
-        'Unlimited custom integrations',
-        'Priority support (4h response)',
-        'Advanced analytics & reporting',
-        'Custom AI training',
-        'Team collaboration tools',
-        'API access',
-        '99.9% uptime SLA',
-        'SOC 2 compliance'
-      ],
-      notIncluded: [
-        'Dedicated account manager',
-        'Custom development',
-        'On-premise deployment'
-      ],
-      cta: 'Start Free Trial',
-      popular: true
-    },
-    {
-      name: 'Enterprise',
-      description: 'For large organizations with complex automation needs',
-      monthlyPrice: 'Custom',
-      annualPrice: 'Custom',
-      savings: 'Volume discounts available',
-      features: [
-        'Unlimited automated interactions',
-        'Enterprise AI with custom models',
-        'Fully custom workflow development',
-        'White-label solutions',
-        'Dedicated account manager',
-        'Custom SLA (up to 99.99%)',
-        '24/7 phone support',
-        'Advanced security & compliance',
-        'On-premise deployment options',
-        'Custom integrations & development',
-        'Training & onboarding',
-        'Success guarantee'
+        'Everything in Starter Package',
+        'Custom AI model development',
+        'Unlimited system integrations',
+        'Dedicated automation specialist',
+        '6 months of premium support',
+        'White-label solution options',
+        'Advanced analytics and reporting',
+        'Priority feature requests',
+        '24/7 technical support',
+        'Quarterly business reviews',
+        'Success guarantee - 60% cost reduction'
       ],
       notIncluded: [],
-      cta: 'Contact Sales',
-      popular: false
+      cta: 'Get Professional',
+      popular: false,
+      badge: 'ENTERPRISE'
     }
   ]
 
@@ -113,19 +143,13 @@ export default function PricingPage() {
   ]
 
   const getPrice = (plan: any) => {
-    if (plan.monthlyPrice === 'Custom') return 'Custom Pricing'
-    
-    const price = isAnnual ? plan.annualPrice : plan.monthlyPrice
-    const period = isAnnual ? '/year' : '/month'
-    
-    return `$${price.toLocaleString()}${period}`
+    if (plan.price === 0) return 'Free'
+    return `$${plan.price.toLocaleString()}`
   }
 
-  const getPerMonthPrice = (plan: any) => {
-    if (plan.monthlyPrice === 'Custom') return ''
-    
-    const monthlyEquivalent = isAnnual ? Math.round(plan.annualPrice / 12) : plan.monthlyPrice
-    return isAnnual ? `$${monthlyEquivalent}/month billed annually` : 'Billed monthly'
+  const getOriginalPrice = (plan: any) => {
+    if (plan.price === 0 || !plan.originalPrice) return null
+    return `$${plan.originalPrice.toLocaleString()}`
   }
 
   return (
@@ -152,30 +176,20 @@ export default function PricingPage() {
               Choose the perfect plan to automate your business operations and start saving costs immediately.
             </motion.p>
             
-            {/* Billing Toggle */}
             <motion.div 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
-              className="flex items-center justify-center space-x-4 mb-12"
+              className="text-center mb-12"
             >
-              <span className={`font-medium ${!isAnnual ? 'text-gray-900' : 'text-gray-500'}`}>Monthly</span>
-              <button
-                onClick={() => setIsAnnual(!isAnnual)}
-                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                  isAnnual ? 'bg-[#FF4A00]' : 'bg-gray-200'
-                }`}
-              >
-                <span
-                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                    isAnnual ? 'translate-x-6' : 'translate-x-1'
-                  }`}
-                />
-              </button>
-              <span className={`font-medium ${isAnnual ? 'text-gray-900' : 'text-gray-500'}`}>
-                Annual
-                <span className="ml-1 text-green-600 text-sm">(Save 17%)</span>
-              </span>
+              <div className="bg-gradient-to-r from-green-50 to-blue-50 rounded-xl p-6 max-w-2xl mx-auto">
+                <p className="text-lg text-gray-700">
+                  🎯 <strong>Limited Time:</strong> Save thousands on implementation packages
+                </p>
+                <p className="text-sm text-gray-600 mt-2">
+                  All packages include success guarantee and priority support
+                </p>
+              </div>
             </motion.div>
           </div>
         </div>
@@ -195,10 +209,15 @@ export default function PricingPage() {
                   plan.popular ? 'border-[#FF4A00] scale-105' : 'border-gray-200'
                 }`}
               >
-                {plan.popular && (
+                {plan.badge && (
                   <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                    <span className="bg-[#FF4A00] text-white px-4 py-1 rounded-full text-sm font-medium">
-                      Most Popular
+                    <span className={`px-4 py-1 rounded-full text-sm font-medium ${
+                      plan.badge === 'FREE' ? 'bg-green-500 text-white' :
+                      plan.badge === 'MOST POPULAR' ? 'bg-[#FF4A00] text-white' :
+                      plan.badge === 'BEST VALUE' ? 'bg-blue-500 text-white' :
+                      'bg-purple-500 text-white'
+                    }`}>
+                      {plan.badge}
                     </span>
                   </div>
                 )}
@@ -208,12 +227,21 @@ export default function PricingPage() {
                   <p className="text-gray-600 mb-6">{plan.description}</p>
                   
                   <div className="mb-4">
-                    <div className="text-4xl font-bold text-gray-900">{getPrice(plan)}</div>
-                    <div className="text-sm text-gray-500">{getPerMonthPrice(plan)}</div>
+                    <div className="flex items-center justify-center space-x-2">
+                      {getOriginalPrice(plan) && (
+                        <div className="text-xl text-gray-400 line-through">{getOriginalPrice(plan)}</div>
+                      )}
+                      <div className="text-4xl font-bold text-gray-900">{getPrice(plan)}</div>
+                    </div>
+                    {plan.price === 0 && (
+                      <div className="text-sm text-gray-500">Usually $497</div>
+                    )}
                   </div>
                   
                   {plan.savings && (
-                    <div className="text-green-600 font-medium text-sm">{plan.savings}</div>
+                    <div className="text-green-600 font-medium text-sm bg-green-50 px-3 py-1 rounded-full inline-block">
+                      {plan.savings}
+                    </div>
                   )}
                 </div>
 
@@ -232,15 +260,16 @@ export default function PricingPage() {
                   ))}
                 </ul>
 
-                <Link href={plan.cta === 'Contact Sales' ? '/contact' : '/book-demo'}>
-                  <button className={`w-full py-3 px-6 rounded-lg font-semibold transition-all ${
-                    plan.popular
-                      ? 'bg-[#FF4A00] text-white hover:bg-[#FF3A00] shadow-lg'
-                      : 'bg-gray-100 text-gray-900 hover:bg-gray-200'
-                  }`}>
-                    {plan.cta}
-                  </button>
-                </Link>
+                <PricingButton
+                  productKey={plan.productKey}
+                  popular={plan.popular}
+                  onSuccess={() => {
+                    console.log(`Payment successful for ${plan.name}`)
+                  }}
+                  onError={(error) => {
+                    console.error(`Payment failed for ${plan.name}:`, error)
+                  }}
+                />
               </motion.div>
             ))}
           </div>

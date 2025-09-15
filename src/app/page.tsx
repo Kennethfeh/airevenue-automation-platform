@@ -3,6 +3,7 @@ import { MainNav } from '@/components/navigation/main-nav'
 import { MainFooter } from '@/components/footer/main-footer'
 import { TrustIndicators } from '@/components/trust/trust-indicators'
 import { NewsletterSignup } from '@/components/lead-magnets/newsletter-signup'
+import { GetStartedButton, PaddleButton } from '@/components/payments/paddle-button'
 import { ZapierHero } from '@/components/features/prospect/zapier-hero'
 import { ClientLogosRow } from '@/components/features/prospect/client-logos-row'
 import { ClientSuccessStories } from '@/components/features/prospect/client-success-stories'
@@ -40,14 +41,14 @@ export const metadata: Metadata = {
     address: false,
     telephone: false,
   },
-  metadataBase: new URL('https://yourcompany.com'),
+  metadataBase: new URL('https://flowsupportai.com'),
   alternates: {
     canonical: '/',
   },
   openGraph: {
     title: 'AI Customer Service Automation | Reduce Costs 60%',
     description: 'Automate customer service with AI. 30-second response times, 24/7 availability. Save $8,000+ monthly. Setup in 24 hours.',
-    url: 'https://yourcompany.com',
+    url: 'https://flowsupportai.com',
     siteName: 'AI Revenue Automation Platform',
     images: [
       {
@@ -85,7 +86,7 @@ export default function LandingPage() {
     '@type': 'SoftwareApplication',
     name: 'AI Customer Service Automation Platform',
     description: 'Automate customer service with AI. 30-second response times, 24/7 availability. Save $8,000+ monthly. Setup in 24 hours.',
-    url: 'https://yourcompany.com',
+    url: 'https://flowsupportai.com',
     applicationCategory: 'BusinessApplication',
     operatingSystem: 'Web-based',
     offers: {
@@ -182,6 +183,47 @@ export default function LandingPage() {
         <section aria-labelledby="newsletter-heading" className="py-16">
           <div className="container-xl px-4 sm:px-6 lg:px-8">
             <NewsletterSignup />
+          </div>
+        </section>
+
+        {/* Payment CTA Section */}
+        <section aria-labelledby="payment-cta-heading" className="py-16 bg-gradient-to-r from-[#FF4A00] to-[#FF6B1A]">
+          <div className="container-xl px-4 sm:px-6 lg:px-8">
+            <div className="max-w-4xl mx-auto text-center text-white">
+              <h2 className="text-3xl md:text-4xl font-bold mb-6">
+                Ready to Transform Your Business?
+              </h2>
+              <p className="text-xl mb-8 opacity-90">
+                Join 500+ companies saving $8,000+ monthly with AI automation. 
+                Start with a free analysis or jump straight to implementation.
+              </p>
+              
+              <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
+                <PaddleButton
+                  productKey="freeAnalysis"
+                  variant="secondary"
+                  size="lg"
+                  className="bg-white text-[#FF4A00] hover:bg-gray-100 border-0"
+                >
+                  Get Free Analysis ($497 Value)
+                </PaddleButton>
+                
+                <div className="text-white/80 text-sm">or</div>
+                
+                <PaddleButton
+                  productKey="consultation"
+                  variant="outline"
+                  size="lg"
+                  className="border-white text-white hover:bg-white hover:text-[#FF4A00]"
+                >
+                  Get Started - $497
+                </PaddleButton>
+              </div>
+
+              <div className="mt-8 text-sm opacity-75">
+                <p>💳 Secure payment by Paddle • 🛡️ Success guarantee • 📞 24/7 support</p>
+              </div>
+            </div>
           </div>
         </section>
         
