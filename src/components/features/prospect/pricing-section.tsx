@@ -1,133 +1,39 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import { motion } from 'framer-motion'
 import { Check, Star, ArrowRight, DollarSign, Mail, Phone, Loader2 } from 'lucide-react'
-import { openPaddleCheckout, PRODUCTS, initPaddle } from '@/lib/paddle'
+import { processCheckout, PLANS, formatPrice } from '@/lib/payments'
 
 export const PricingSection: React.FC = () => {
   const [isYearly, setIsYearly] = useState(false)
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null)
-  const [paddleReady, setPaddleReady] = useState(false)
 
-  // Initialize Paddle on component mount
-  useEffect(() => {
-    const initializePaddle = async () => {
-      try {
-        await initPaddle()
-        setPaddleReady(true)
-      } catch (error) {
-        console.error('Failed to initialize Paddle:', error)
-      }
-    }
-
-    initializePaddle()
-  }, [])
-
-  const plans = [
-    {
-      name: 'Growth',
-      monthlyPrice: 249,
-      yearlyPrice: 2990,
-      description: 'Save $8,000+ monthly in support costs',
-      features: [
-        'Up to 5,000 inquiries/month',
-        'AI automation with GPT-4',
-        'Multi-channel integration',
-        'Real-time analytics dashboard',
-        'Knowledge base & training',
-        'Standard integrations included',
-        '24/7 AI support',
-        'Setup & onboarding included'
-      ],
-      popular: false,
-      setupFee: 2500,
-      savings: '$8,000+',
-      paddleProductMonthly: 'growthMonthly',
-      paddleProductYearly: 'growthYearly'
-    },
-    {
-      name: 'Professional',
-      monthlyPrice: 666,
-      yearlyPrice: 7990,
-      description: 'Save $15,000+ monthly with advanced automation',
-      features: [
-        'Up to 15,000 inquiries/month',
-        'Advanced AI with custom training',
-        'All channels (email, chat, phone, social)',
-        'Advanced analytics & insights',
-        'All CRM & help desk integrations',
-        'Priority support & success manager',
-        'Team collaboration tools',
-        'Custom workflows & automation'
-      ],
-      popular: true,
-      setupFee: 3500,
-      savings: '$15,000+',
-      paddleProductMonthly: 'professionalMonthly',
-      paddleProductYearly: 'professionalYearly'
-    },
-    {
-      name: 'Enterprise',
-      monthlyPrice: 'Custom',
-      yearlyPrice: 'Custom',
-      description: 'Save $25,000+ monthly with unlimited scale',
-      features: [
-        'Unlimited inquiries',
-        'Custom AI model development',
-        'Advanced security & compliance',
-        'Dedicated success team',
-        'Unlimited custom integrations',
-        'Performance SLA guarantees',
-        'Advanced reporting & analytics',
-        'API access & white-labeling',
-        'Custom contract terms'
-      ],
-      popular: false,
-      setupFee: 'Custom',
-      savings: '$25,000+',
-      paddleProductMonthly: 'enterprise',
-      paddleProductYearly: 'enterprise'
-    }
+  // Get plans from the unified payment system
+  const plansConfig = [
+    { key: 'growth' as const, ...PLANS.growth },
+    { key: 'professional' as const, ...PLANS.professional },
+    { key: 'enterprise' as const, ...PLANS.enterprise }
   ]
 
-  const handleCheckout = async (plan: typeof plans[0]) => {
-    if (!paddleReady) {
-      alert('Payment system is loading. Please try again in a moment.')
-      return
-    }
-
-    if (plan.name === 'Enterprise') {
+  const handleCheckout = async (planKey: 'growth' | 'professional' | 'enterprise', planName: string) => {
+    if (planKey === 'enterprise') {
       // Redirect to contact for enterprise
       window.location.href = '/contact'
       return
     }
 
-    const productKey = isYearly ? plan.paddleProductYearly : plan.paddleProductMonthly
-    const product = PRODUCTS[productKey as keyof typeof PRODUCTS]
-
-    if (!product) {
-      alert('Product not found. Please contact support.')
-      return
-    }
-
-    setLoadingPlan(plan.name)
+    setLoadingPlan(planName)
 
     try {
-      await openPaddleCheckout({
-        productId: product.id,
-        customData: {
-          plan: plan.name,
-          billing: isYearly ? 'yearly' : 'monthly'
-        },
-        successUrl: `${window.location.origin}/payment/success?plan=${plan.name}`,
-        closeCallback: () => {
-          setLoadingPlan(null)
-        }
+      await processCheckout({
+        planName: planKey,
+        billing: isYearly ? 'yearly' : 'monthly'
       })
     } catch (error) {
       console.error('Checkout error:', error)
-      alert('Unable to open checkout. Please try again or contact support.')
+      // Error handling is done in processCheckout function
+    } finally {
       setLoadingPlan(null)
     }
   }
@@ -179,7 +85,7 @@ export const PricingSection: React.FC = () => {
         </motion.div>
 
         <div className="grid lg:grid-cols-3 gap-8 mb-16">
-          {plans.map((plan, index) => (
+          {plansConfig.map((plan, index) => (
             <motion.div
               key={plan.name}
               initial={{ opacity: 0, y: 30 }}
@@ -210,13 +116,10 @@ export const PricingSection: React.FC = () => {
                   </p>
                   
                   <div className="mb-4">
-                    {plan.name !== 'Enterprise' ? (
+                    {typeof plan.monthlyPrice === 'number' ? (
                       <>
                         <span className="text-5xl font-bold text-gray-900 dark:text-white">
-                          ${isYearly
-                            ? (plan.yearlyPrice as number).toLocaleString()
-                            : (plan.monthlyPrice as number).toLocaleString()
-                          }
+                          {formatPrice(isYearly ? plan.yearlyPrice as number : plan.monthlyPrice)}
                         </span>
                         <span className="text-xl text-gray-500 dark:text-gray-400">
                           {isYearly ? '/year' : '/month'}
@@ -235,8 +138,8 @@ export const PricingSection: React.FC = () => {
                   </div>
 
                   <div className="text-sm text-gray-500 dark:text-gray-400">
-                    {plan.name !== 'Enterprise'
-                      ? `+ $${plan.setupFee.toLocaleString()} setup fee`
+                    {typeof plan.setupFee === 'number'
+                      ? `+ ${formatPrice(plan.setupFee)} setup fee`
                       : 'Custom setup and pricing'
                     }
                   </div>
@@ -269,7 +172,7 @@ export const PricingSection: React.FC = () => {
                       </a>
                     </div>
                     <button
-                      onClick={() => handleCheckout(plan)}
+                      onClick={() => handleCheckout(plan.key, plan.name)}
                       disabled={loadingPlan === plan.name}
                       className="w-full py-4 px-6 rounded-xl font-semibold transition-all bg-primary-600 text-white hover:bg-primary-700 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
                     >
@@ -295,8 +198,8 @@ export const PricingSection: React.FC = () => {
                   </div>
                 ) : (
                   <button
-                    onClick={() => handleCheckout(plan)}
-                    disabled={loadingPlan === plan.name || !paddleReady}
+                    onClick={() => handleCheckout(plan.key, plan.name)}
+                    disabled={loadingPlan === plan.name}
                     className={`w-full py-4 px-6 rounded-xl font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center ${
                       plan.popular
                         ? 'bg-primary-600 text-white hover:bg-primary-700 shadow-lg hover:shadow-xl'
@@ -307,11 +210,6 @@ export const PricingSection: React.FC = () => {
                       <>
                         <Loader2 className="w-5 h-5 mr-2 animate-spin" />
                         Processing...
-                      </>
-                    ) : !paddleReady ? (
-                      <>
-                        <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                        Loading Payment...
                       </>
                     ) : (
                       <>
