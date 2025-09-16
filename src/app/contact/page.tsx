@@ -165,7 +165,7 @@ export default function ContactPage() {
       <MainNav />
 
       {/* Hidden form for Netlify form detection */}
-      <form name="contact" netlify hidden>
+      <form name="contact" data-netlify="true" hidden>
         <input type="text" name="name" />
         <input type="email" name="email" />
         <input type="text" name="company" />

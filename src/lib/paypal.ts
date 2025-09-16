@@ -70,7 +70,7 @@ export const initializePayPal = () => {
 // Create PayPal subscription
 export const createPayPalSubscription = async (planId: string) => {
   try {
-    const paypal = await initializePayPal()
+    const paypal = await initializePayPal() as any
 
     return paypal.Buttons({
       style: {
