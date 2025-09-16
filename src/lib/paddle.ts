@@ -6,7 +6,7 @@ import { initializePaddle, Paddle } from '@paddle/paddle-js'
 export const PADDLE_CONFIG = {
   environment: 'production' as const,
   sellerId: '253274', // Your Paddle Seller ID
-  apiKey: 'live_258982d9ee41c671665ae34b65d', // Your actual Paddle Client Token
+  apiKey: process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN || 'live_258982d9ee41c671665ae34b65d', // Your actual Paddle Client Token
 }
 
 // Product configuration - FlowSupport AI Pricing Tiers
@@ -57,6 +57,12 @@ export const initPaddle = async (): Promise<Paddle> => {
   }
 
   try {
+    console.log('Initializing Paddle with config:', {
+      environment: PADDLE_CONFIG.environment,
+      hasToken: !!PADDLE_CONFIG.apiKey,
+      tokenLength: PADDLE_CONFIG.apiKey.length
+    })
+
     paddleInstance = await initializePaddle({
       environment: PADDLE_CONFIG.environment,
       token: PADDLE_CONFIG.apiKey,
@@ -79,10 +85,12 @@ export const initPaddle = async (): Promise<Paddle> => {
       }
     })
 
+    console.log('Paddle initialized successfully')
     return paddleInstance
   } catch (error) {
     console.error('Failed to initialize Paddle:', error)
-    throw new Error('Payment system initialization failed')
+    console.error('Paddle config:', PADDLE_CONFIG)
+    throw new Error(`Payment system initialization failed: ${error instanceof Error ? error.message : 'Unknown error'}`)
   }
 }
 
@@ -100,8 +108,10 @@ export interface CheckoutOptions {
 // Open Paddle checkout
 export const openPaddleCheckout = async (options: CheckoutOptions) => {
   try {
+    console.log('Opening Paddle checkout for product:', options.productId)
+
     const paddle = await initPaddle()
-    
+
     const checkoutOptions = {
       items: [
         {
@@ -124,10 +134,14 @@ export const openPaddleCheckout = async (options: CheckoutOptions) => {
       }
     }
 
+    console.log('Paddle checkout options:', checkoutOptions)
+
     paddle.Checkout.open(checkoutOptions)
+    console.log('Paddle checkout opened successfully')
   } catch (error) {
     console.error('Failed to open Paddle checkout:', error)
-    throw new Error('Unable to open payment checkout')
+    console.error('Product ID that failed:', options.productId)
+    throw new Error(`Unable to open payment checkout: ${error instanceof Error ? error.message : 'Unknown error'}`)
   }
 }
 
