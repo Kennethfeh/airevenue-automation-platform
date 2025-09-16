@@ -5,6 +5,7 @@
 
 import { openLemonSqueezyCheckout, getLemonSqueezyProduct, LEMONSQUEEZY_PRODUCTS } from './lemonsqueezy'
 import { createPayPalSubscription, getPayPalProduct, PAYPAL_PRODUCTS } from './paypal'
+import { openSimpleCheckoutModal } from './simple-checkout'
 
 export type PaymentProvider = 'lemonsqueezy' | 'paypal'
 export type ProductKey = keyof typeof LEMONSQUEEZY_PRODUCTS
@@ -132,9 +133,21 @@ export const processCheckout = async (options: CheckoutOptions): Promise<void> =
       }
     }
 
-    // If all fails, show user-friendly error
-    alert(`We're experiencing payment system issues. Please contact us at hello@flowsupportai.com or try again in a few minutes.`)
-    throw error
+    // If all fails, use simple checkout system
+    console.log('All payment providers failed, using simple checkout')
+
+    const plan = PLANS[options.planName]
+    const price = options.billing === 'yearly'
+      ? (typeof plan.yearlyPrice === 'number' ? plan.yearlyPrice : 0)
+      : (typeof plan.monthlyPrice === 'number' ? plan.monthlyPrice : 0)
+
+    if (price > 0) {
+      openSimpleCheckoutModal(plan.name, options.billing, price)
+      return
+    } else {
+      alert(`We're experiencing payment system issues. Please contact us at hello@flowsupportai.com or try again in a few minutes.`)
+      throw error
+    }
   }
 }
 
