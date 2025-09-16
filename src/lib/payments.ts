@@ -3,7 +3,7 @@
 // Unified Payment System for FlowSupport AI
 // Supports multiple payment providers for maximum global coverage
 
-import { openLemonSqueezyCheckout, getLemonSqueezyProduct, LEMONSQUEEZY_PRODUCTS } from './lemonsqueezy'
+import { openLemonSqueezyCheckout, getLemonSqueezyProduct, LEMONSQUEEZY_PRODUCTS } from './lemonsqueezy-payments'
 import { createPayPalSubscription, getPayPalProduct, PAYPAL_PRODUCTS } from './paypal'
 import { openSimpleCheckoutModal } from './simple-checkout'
 
@@ -153,17 +153,33 @@ export const processCheckout = async (options: CheckoutOptions): Promise<void> =
 
 // LemonSqueezy checkout
 const processLemonSqueezyCheckout = async (productKey: ProductKey): Promise<void> => {
-  const product = getLemonSqueezyProduct(productKey)
-  if (!product) {
-    throw new Error(`Product not found: ${productKey}`)
-  }
+  // Map our plan keys to LemonSqueezy product keys
+  const lemonSqueezyKey = mapToLemonSqueezyKey(productKey)
+  openLemonSqueezyCheckout(lemonSqueezyKey)
+}
 
-  openLemonSqueezyCheckout(product.variantId, product.name)
+// Map our internal product keys to LemonSqueezy keys
+const mapToLemonSqueezyKey = (productKey: ProductKey): keyof typeof LEMONSQUEEZY_PRODUCTS => {
+  // Map from our internal keys to LemonSqueezy keys
+  if (productKey.includes('growth')) return 'starter'
+  if (productKey.includes('professional')) return 'professional'
+  if (productKey.includes('consultation')) return 'consultation'
+  return 'starter' // fallback
+}
+
+// Map our internal product keys to PayPal keys
+const mapToPayPalKey = (productKey: ProductKey): string => {
+  // Map from our internal keys to PayPal keys
+  if (productKey.includes('growth')) return 'growthMonthly'
+  if (productKey.includes('professional')) return 'professionalMonthly'
+  return 'growthMonthly' // fallback
 }
 
 // PayPal checkout
 const processPayPalCheckout = async (productKey: ProductKey): Promise<void> => {
-  const product = getPayPalProduct(productKey)
+  // Map to PayPal product key
+  const paypalKey = mapToPayPalKey(productKey)
+  const product = getPayPalProduct(paypalKey as any)
   if (!product) {
     throw new Error(`PayPal product not found: ${productKey}`)
   }

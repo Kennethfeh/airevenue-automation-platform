@@ -6,7 +6,7 @@ import { Check, X, Phone, Calendar, Zap, Shield, Headphones, TrendingUp } from '
 import Link from 'next/link'
 import { MainNav } from '@/components/navigation/main-nav'
 import { MainFooter } from '@/components/footer/main-footer'
-import { openSimpleCheckoutModal } from '@/lib/simple-checkout'
+import { openLemonSqueezyCheckout } from '@/lib/lemonsqueezy-payments'
 
 export default function PricingPage() {
   const [isAnnual, setIsAnnual] = useState(true)
@@ -266,8 +266,14 @@ export default function PricingPage() {
                       // For free analysis, redirect to contact form
                       window.location.href = '/contact'
                     } else {
-                      // For paid plans, open simple checkout
-                      openSimpleCheckoutModal(plan.name, 'one-time', plan.price)
+                      // For paid plans, use LemonSqueezy checkout
+                      if (plan.productKey === 'consultation') {
+                        openLemonSqueezyCheckout('consultation')
+                      } else if (plan.productKey === 'starter') {
+                        openLemonSqueezyCheckout('starter')
+                      } else if (plan.productKey === 'professional') {
+                        openLemonSqueezyCheckout('professional')
+                      }
                     }
                   }}
                   className={`w-full py-4 px-6 rounded-xl font-semibold transition-all ${

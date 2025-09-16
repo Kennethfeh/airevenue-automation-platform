@@ -1,6 +1,6 @@
 'use client'
 
-import { openSimpleCheckoutModal } from '@/lib/simple-checkout'
+import { openLemonSqueezyCheckout } from '@/lib/lemonsqueezy-payments'
 
 export function InteractiveButtons() {
   return (
@@ -15,7 +15,7 @@ export function InteractiveButtons() {
       <div className="text-white/80 text-sm">or</div>
 
       <button
-        onClick={() => openSimpleCheckoutModal('Strategy Consultation', 'one-time', 497)}
+        onClick={() => openLemonSqueezyCheckout('consultation')}
         className="border-white text-white hover:bg-white hover:text-[#FF4A00] px-8 py-4 text-lg font-semibold rounded-lg border-2 transition-all"
       >
         Get Started - $497
