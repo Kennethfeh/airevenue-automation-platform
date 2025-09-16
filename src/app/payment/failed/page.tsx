@@ -7,15 +7,12 @@ import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { MainNav } from '@/components/navigation/main-nav'
 import { MainFooter } from '@/components/footer/main-footer'
-import { PaddleButton } from '@/components/payments/paddle-button'
-import { getProduct, PRODUCTS } from '@/lib/paddle'
+import { openSimpleCheckoutModal } from '@/lib/simple-checkout'
 
 function PaymentFailedContent() {
   const searchParams = useSearchParams()
-  const productKey = searchParams?.get('product') as keyof typeof PRODUCTS | null
+  const planName = searchParams?.get('plan') || 'Plan'
   const error = searchParams?.get('error') || 'Payment could not be processed'
-
-  const product = productKey ? getProduct(productKey) : null
 
   const commonReasons = [
     {
@@ -66,17 +63,12 @@ function PaymentFailedContent() {
                 We couldn't process your payment. Don't worry, you haven't been charged.
               </p>
 
-              {product && (
-                <div className="bg-gradient-to-r from-red-50 to-orange-50 rounded-2xl p-8 mb-8">
-                  <h2 className="text-2xl font-bold text-gray-900 mb-2">
-                    {product.name}
-                  </h2>
-                  <p className="text-gray-700 mb-4">{product.description}</p>
-                  <div className="text-lg font-semibold text-[#FF4A00]">
-                    {product.price === 0 ? 'Free' : `$${product.price.toLocaleString()}`}
-                  </div>
-                </div>
-              )}
+              <div className="bg-gradient-to-r from-red-50 to-orange-50 rounded-2xl p-8 mb-8">
+                <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                  {planName}
+                </h2>
+                <p className="text-gray-700 mb-4">We're here to help you complete your order</p>
+              </div>
 
               <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-8">
                 <p className="text-red-800 font-medium">Error: {error}</p>
@@ -84,33 +76,30 @@ function PaymentFailedContent() {
             </motion.div>
 
             {/* Retry Section */}
-            {product && (
-              <motion.div 
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 }}
-                className="text-center mb-12"
-              >
-                <h2 className="text-2xl font-bold text-gray-900 mb-6">
-                  Try Again
-                </h2>
-                
-                <div className="bg-white border border-gray-200 rounded-xl p-8 max-w-md mx-auto">
-                  <CreditCard className="w-12 h-12 text-[#FF4A00] mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                    {product.name}
-                  </h3>
-                  <PaddleButton
-                    productKey={productKey}
-                    fullWidth
-                    size="lg"
-                  >
-                    <RefreshCw className="w-4 h-4 mr-2" />
-                    Try Payment Again
-                  </PaddleButton>
-                </div>
-              </motion.div>
-            )}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="text-center mb-12"
+            >
+              <h2 className="text-2xl font-bold text-gray-900 mb-6">
+                Try Again
+              </h2>
+
+              <div className="bg-white border border-gray-200 rounded-xl p-8 max-w-md mx-auto">
+                <CreditCard className="w-12 h-12 text-[#FF4A00] mx-auto mb-4" />
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                  Try Payment Again
+                </h3>
+                <button
+                  onClick={() => window.location.href = '/pricing'}
+                  className="w-full bg-gradient-to-r from-[#FF4A00] to-[#FF6B1A] text-white px-8 py-4 text-lg font-semibold rounded-lg hover:shadow-lg transition-all inline-flex items-center justify-center"
+                >
+                  <RefreshCw className="w-4 h-4 mr-2" />
+                  Try Payment Again
+                </button>
+              </div>
+            </motion.div>
 
             {/* Common Reasons */}
             <motion.div 
@@ -165,12 +154,12 @@ function PaymentFailedContent() {
                   Contact Sales Team
                 </Link>
                 
-                <PaddleButton
-                  productKey="freeAnalysis"
-                  variant="outline"
+                <Link
+                  href="/contact"
+                  className="border border-gray-300 text-gray-700 px-6 py-3 rounded-lg font-semibold hover:bg-gray-50 transition-colors inline-flex items-center"
                 >
                   Start with Free Analysis
-                </PaddleButton>
+                </Link>
               </div>
             </motion.div>
 

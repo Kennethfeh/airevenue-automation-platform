@@ -7,7 +7,6 @@ import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { MainNav } from '@/components/navigation/main-nav'
 import { MainFooter } from '@/components/footer/main-footer'
-import { getProduct, PRODUCTS } from '@/lib/paddle'
 
 function PaymentSuccessContent() {
   const searchParams = useSearchParams()
