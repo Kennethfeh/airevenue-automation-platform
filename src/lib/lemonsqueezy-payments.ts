@@ -14,50 +14,89 @@ export interface LemonSqueezyProduct {
 }
 
 // LemonSqueezy Product Configuration
-// Replace these with your actual LemonSqueezy variant IDs after account setup
+// Updated with actual LemonSqueezy variant IDs
 export const LEMONSQUEEZY_PRODUCTS: Record<string, LemonSqueezyProduct> = {
   freeAnalysis: {
     id: 'free-analysis',
     name: 'Free Business Analysis',
     description: 'Complete automation assessment',
     price: 0,
-    variant_id: 'YOUR_FREE_ANALYSIS_VARIANT_ID'
+    variant_id: 'contact' // Free analysis redirects to contact form
   },
   consultation: {
     id: 'strategy-consultation',
     name: 'Strategy Consultation',
     description: '90-minute expert consultation',
     price: 497,
-    variant_id: 'YOUR_CONSULTATION_VARIANT_ID'
+    variant_id: '637093' // Strategy consultation - one-time payment
+  },
+  growthMonthly: {
+    id: 'growth-monthly',
+    name: 'Growth Plan Monthly',
+    description: 'Monthly subscription for growth plan',
+    price: 249,
+    monthlyPrice: 249,
+    variant_id: '637093'
+  },
+  growthYearly: {
+    id: 'growth-yearly',
+    name: 'Growth Plan Yearly',
+    description: 'Yearly subscription for growth plan',
+    price: 2990,
+    yearlyPrice: 2990,
+    variant_id: '637091'
+  },
+  professionalMonthly: {
+    id: 'professional-monthly',
+    name: 'Professional Plan Monthly',
+    description: 'Monthly subscription for professional plan',
+    price: 666,
+    monthlyPrice: 666,
+    variant_id: '637094'
+  },
+  professionalYearly: {
+    id: 'professional-yearly',
+    name: 'Professional Plan Yearly',
+    description: 'Yearly subscription for professional plan',
+    price: 7990,
+    yearlyPrice: 7990,
+    variant_id: '637095'
   },
   starter: {
     id: 'starter-package',
     name: 'Starter Package',
     description: 'Complete automation setup',
     price: 7997,
-    variant_id: 'YOUR_STARTER_VARIANT_ID'
+    variant_id: '637094' // Using professional monthly as starter
   },
   professional: {
     id: 'professional-package',
     name: 'Professional Package',
     description: 'Enterprise automation solution',
     price: 12997,
-    variant_id: 'YOUR_PROFESSIONAL_VARIANT_ID'
+    variant_id: '637095' // Using professional yearly as professional package
   }
 }
 
 // Initialize LemonSqueezy checkout
 export const initLemonSqueezyCheckout = (variantId: string, customData?: any) => {
-  // LemonSqueezy checkout URL format
+  // LemonSqueezy checkout URL format - use the standard checkout URL
   const checkoutUrl = `https://flowsupportai.lemonsqueezy.com/checkout/buy/${variantId}`
 
-  // Add custom data as URL parameters if needed
+  // Add success and cancel URLs as parameters
+  const params = new URLSearchParams({
+    success_url: `${typeof window !== 'undefined' ? window.location.origin : 'https://flowsupportai.com'}/payment/success`,
+    cancel_url: `${typeof window !== 'undefined' ? window.location.origin : 'https://flowsupportai.com'}/payment/failed`
+  })
+
+  // Add custom data if provided
   if (customData) {
-    const params = new URLSearchParams(customData)
-    return `${checkoutUrl}?${params.toString()}`
+    Object.entries(customData).forEach(([key, value]) => {
+      params.append(key, String(value))
+    })
   }
 
-  return checkoutUrl
+  return `${checkoutUrl}?${params.toString()}`
 }
 
 // Open LemonSqueezy checkout in same window (better conversion)
@@ -69,22 +108,13 @@ export const openLemonSqueezyCheckout = (productKey: keyof typeof LEMONSQUEEZY_P
     return
   }
 
-  // For free products, redirect to contact
-  if (product.price === 0) {
+  // For free products or contact variant, redirect to contact
+  if (product.price === 0 || product.variant_id === 'contact') {
     window.location.href = '/contact'
     return
   }
 
-  // Check if variant ID is configured
-  if (product.variant_id.startsWith('YOUR_')) {
-    console.error('LemonSqueezy variant ID not configured for:', productKey)
-    // Fallback to simple checkout during setup
-    const { openSimpleCheckoutModal } = require('./simple-checkout')
-    openSimpleCheckoutModal(product.name, 'one-time', product.price)
-    return
-  }
-
-  // Open LemonSqueezy checkout
+  // Open LemonSqueezy checkout with actual variant ID
   const checkoutUrl = initLemonSqueezyCheckout(product.variant_id, {
     checkout_data: JSON.stringify({
       custom: {
@@ -95,6 +125,7 @@ export const openLemonSqueezyCheckout = (productKey: keyof typeof LEMONSQUEEZY_P
     })
   })
 
+  console.log('Opening LemonSqueezy checkout:', checkoutUrl)
   window.location.href = checkoutUrl
 }
 

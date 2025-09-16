@@ -160,11 +160,17 @@ const processLemonSqueezyCheckout = async (productKey: ProductKey): Promise<void
 
 // Map our internal product keys to LemonSqueezy keys
 const mapToLemonSqueezyKey = (productKey: ProductKey): keyof typeof LEMONSQUEEZY_PRODUCTS => {
-  // Map from our internal keys to LemonSqueezy keys
-  if (productKey.includes('growth')) return 'starter'
-  if (productKey.includes('professional')) return 'professional'
+  // Map from our internal keys to LemonSqueezy keys with billing cycle
+  if (productKey === 'growthMonthly') return 'growthMonthly'
+  if (productKey === 'growthYearly') return 'growthYearly'
+  if (productKey === 'professionalMonthly') return 'professionalMonthly'
+  if (productKey === 'professionalYearly') return 'professionalYearly'
   if (productKey.includes('consultation')) return 'consultation'
-  return 'starter' // fallback
+
+  // Fallbacks for legacy keys
+  if (productKey.includes('growth')) return 'growthMonthly'
+  if (productKey.includes('professional')) return 'professionalMonthly'
+  return 'growthMonthly' // fallback
 }
 
 // Map our internal product keys to PayPal keys
