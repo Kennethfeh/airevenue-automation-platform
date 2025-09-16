@@ -6,34 +6,34 @@ import { initializePaddle, Paddle } from '@paddle/paddle-js'
 export const PADDLE_CONFIG = {
   environment: 'production' as const,
   sellerId: '253274', // Your Paddle Seller ID
-  apiKey: process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN || '', // Client-side token from Paddle
+  apiKey: 'live_258982d9ee41c671665ae34b65d', // Your actual Paddle Client Token
 }
 
 // Product configuration - FlowSupport AI Pricing Tiers
 export const PRODUCTS = {
   growthMonthly: {
-    id: 'pri_01hp6kvyeq30vn7a3x7tey5y7w', // Growth Plan Monthly - Replace with your Paddle product ID
+    id: 'pri_01k59bk6ttdtkd75tbkvn1v4hc', // Growth Plan Monthly - Your actual Paddle Price ID
     name: 'Growth Plan',
     price: 249,
     description: 'Save $8,000+ monthly in support costs',
     billing: 'monthly' as const
   },
   growthYearly: {
-    id: 'pri_01hp6kvyeq30vn7a3x7tey5y8w', // Growth Plan Yearly - Replace with your Paddle product ID
+    id: 'pri_01k59befr6ebm9j0czccppw99n', // Growth Plan Yearly - Your actual Paddle Price ID
     name: 'Growth Plan (Yearly)',
     price: 2990,
     description: 'Save $8,000+ monthly in support costs - 20% off yearly',
     billing: 'yearly' as const
   },
   professionalMonthly: {
-    id: 'pri_01hp6kvyeq30vn7a3x7tey5y9w', // Professional Plan Monthly - Replace with your Paddle product ID
+    id: 'pri_01k59bna93cma1ssnz4x1gbpva', // Professional Plan Monthly - Your actual Paddle Price ID
     name: 'Professional Plan',
     price: 666,
     description: 'Save $15,000+ monthly with advanced automation',
     billing: 'monthly' as const
   },
   professionalYearly: {
-    id: 'pri_01hp6kvyeq30vn7a3x7tey5z0w', // Professional Plan Yearly - Replace with your Paddle product ID
+    id: 'pri_01k59bna93cma1ssnz4x1gbpva', // Professional Plan Yearly - Your actual Paddle Price ID
     name: 'Professional Plan (Yearly)',
     price: 7990,
     description: 'Save $15,000+ monthly with advanced automation - 20% off yearly',
@@ -59,7 +59,7 @@ export const initPaddle = async (): Promise<Paddle> => {
   try {
     paddleInstance = await initializePaddle({
       environment: PADDLE_CONFIG.environment,
-      token: PADDLE_CONFIG.apiKey || PADDLE_CONFIG.sellerId, // Use seller ID as fallback
+      token: PADDLE_CONFIG.apiKey,
       eventCallback: (data) => {
         // Handle Paddle events
         console.log('Paddle event:', data)
