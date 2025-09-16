@@ -2,7 +2,7 @@
 
 import React from 'react'
 import { motion } from 'framer-motion'
-import { Check, Star, ArrowRight, DollarSign } from 'lucide-react'
+import { Check, Star, ArrowRight, DollarSign, Mail, Phone } from 'lucide-react'
 
 export const PricingSection: React.FC = () => {
   const plans = [
@@ -147,14 +147,42 @@ export const PricingSection: React.FC = () => {
                   ))}
                 </ul>
 
-                <button className={`w-full py-4 px-6 rounded-xl font-semibold transition-all ${
-                  plan.popular
-                    ? 'bg-primary-600 text-white hover:bg-primary-700 shadow-lg hover:shadow-xl'
-                    : 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white hover:bg-gray-200 dark:hover:bg-gray-600'
-                }`}>
-                  Get Started
-                  <ArrowRight className="w-5 h-5 ml-2 inline" />
-                </button>
+{plan.name === 'Enterprise' ? (
+                  <div className="space-y-4">
+                    <div className="bg-gray-50 dark:bg-gray-900 rounded-xl p-6 text-center border border-gray-200 dark:border-gray-700">
+                      <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
+                        Ready to get started?
+                      </h4>
+                      <p className="text-gray-600 dark:text-gray-300 mb-4">
+                        Contact our team for custom pricing and implementation
+                      </p>
+                      <a
+                        href="mailto:hello@flowsupportai.com"
+                        className="inline-flex items-center space-x-2 text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 font-medium"
+                      >
+                        <Mail className="w-4 h-4" />
+                        <span>hello@flowsupportai.com</span>
+                      </a>
+                    </div>
+                    <button className="w-full py-4 px-6 rounded-xl font-semibold transition-all bg-primary-600 text-white hover:bg-primary-700 shadow-lg hover:shadow-xl">
+                      Contact Sales
+                      <ArrowRight className="w-5 h-5 ml-2 inline" />
+                    </button>
+                    <button className="w-full py-3 px-6 rounded-xl font-medium transition-all bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white hover:bg-gray-200 dark:hover:bg-gray-600 border border-gray-300 dark:border-gray-600">
+                      Book a Demo
+                      <Phone className="w-4 h-4 ml-2 inline" />
+                    </button>
+                  </div>
+                ) : (
+                  <button className={`w-full py-4 px-6 rounded-xl font-semibold transition-all ${
+                    plan.popular
+                      ? 'bg-primary-600 text-white hover:bg-primary-700 shadow-lg hover:shadow-xl'
+                      : 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white hover:bg-gray-200 dark:hover:bg-gray-600'
+                  }`}>
+                    Get Started
+                    <ArrowRight className="w-5 h-5 ml-2 inline" />
+                  </button>
+                )}
               </div>
             </motion.div>
           ))}
@@ -190,6 +218,45 @@ export const PricingSection: React.FC = () => {
           </div>
           <p className="text-primary-100 mt-6">
             Based on actual client results. Most businesses achieve positive ROI within 45-60 days.
+          </p>
+        </motion.div>
+
+        {/* Contact Section */}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.4 }}
+          className="mt-16 bg-gray-50 dark:bg-gray-900 rounded-2xl p-8 text-center border border-gray-200 dark:border-gray-700"
+        >
+          <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+            Questions? We're here to help
+          </h3>
+          <p className="text-lg text-gray-600 dark:text-gray-300 mb-6 max-w-2xl mx-auto">
+            Questions about pricing? Our team is ready to help you find the perfect plan for your business needs.
+          </p>
+
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-6 mb-8">
+            <a
+              href="mailto:hello@flowsupportai.com"
+              className="inline-flex items-center space-x-3 bg-white dark:bg-gray-800 px-6 py-3 rounded-xl border border-gray-300 dark:border-gray-600 hover:border-primary-500 dark:hover:border-primary-400 transition-all group"
+            >
+              <Mail className="w-5 h-5 text-primary-600 dark:text-primary-400" />
+              <div className="text-left">
+                <div className="text-sm text-gray-500 dark:text-gray-400">Email us at</div>
+                <div className="font-semibold text-gray-900 dark:text-white group-hover:text-primary-600 dark:group-hover:text-primary-400">
+                  hello@flowsupportai.com
+                </div>
+              </div>
+            </a>
+
+            <button className="inline-flex items-center space-x-3 bg-primary-600 text-white px-8 py-3 rounded-xl font-semibold hover:bg-primary-700 transition-all shadow-lg hover:shadow-xl">
+              <Phone className="w-5 h-5" />
+              <span>Book a free consultation call</span>
+            </button>
+          </div>
+
+          <p className="text-gray-500 dark:text-gray-400">
+            Ready to transform your customer service? Let's discuss your specific needs and show you exactly how FlowSupport AI can help.
           </p>
         </motion.div>
       </div>

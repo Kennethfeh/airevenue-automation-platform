@@ -3,7 +3,7 @@
 import React, { useState } from 'react'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ChevronDown, Phone, Menu, X } from 'lucide-react'
+import { ChevronDown, Menu, X, Mail } from 'lucide-react'
 
 export const MainNav: React.FC = () => {
   const [isProductsOpen, setIsProductsOpen] = useState(false)
@@ -140,11 +140,14 @@ export const MainNav: React.FC = () => {
 
           {/* Right Side Actions */}
           <div className="hidden md:flex items-center space-x-4">
-            {/* Phone Number */}
-            <div className="flex items-center space-x-2 text-gray-600">
-              <Phone className="w-4 h-4" />
-              <span className="text-sm font-medium">+1 (555) 123-4567</span>
-            </div>
+            {/* Email Contact */}
+            <a
+              href="mailto:hello@flowsupportai.com"
+              className="flex items-center space-x-2 text-gray-600 hover:text-[#FF4A00] transition-colors"
+            >
+              <Mail className="w-4 h-4" />
+              <span className="text-sm font-medium">hello@flowsupportai.com</span>
+            </a>
 
             {/* Login Link */}
             <Link href="/login" className="text-gray-700 hover:text-[#FF4A00] font-medium transition-colors">
@@ -212,10 +215,13 @@ export const MainNav: React.FC = () => {
                   Contact
                 </Link>
                 <div className="pt-4 border-t border-gray-200 space-y-3">
-                  <div className="flex items-center space-x-2 text-gray-600">
-                    <Phone className="w-4 h-4" />
-                    <span className="text-sm font-medium">+1 (555) 123-4567</span>
-                  </div>
+                  <a
+                    href="mailto:hello@flowsupportai.com"
+                    className="flex items-center space-x-2 text-gray-600 hover:text-[#FF4A00] transition-colors"
+                  >
+                    <Mail className="w-4 h-4" />
+                    <span className="text-sm font-medium">hello@flowsupportai.com</span>
+                  </a>
                   <Link href="/login" className="block text-gray-700 hover:text-[#FF4A00] font-medium">
                     Login
                   </Link>
