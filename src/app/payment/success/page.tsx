@@ -11,10 +11,8 @@ import { getProduct, PRODUCTS } from '@/lib/paddle'
 
 function PaymentSuccessContent() {
   const searchParams = useSearchParams()
-  const productKey = searchParams?.get('product') as keyof typeof PRODUCTS | null
+  const planName = searchParams?.get('plan') || 'Growth'
   const [customerInfo, setCustomerInfo] = useState<any>(null)
-
-  const product = productKey ? getProduct(productKey) : null
 
   useEffect(() => {
     // You can fetch customer/order details here if needed
@@ -28,74 +26,29 @@ function PaymentSuccessContent() {
   }, [])
 
   const getNextSteps = () => {
-    if (!productKey) return []
-
-    switch (productKey) {
-      case 'freeAnalysis':
-        return [
-          {
-            icon: Calendar,
-            title: 'Schedule Your Analysis Call',
-            description: 'Book a 30-minute call to discuss your automation needs',
-            action: 'Schedule Now',
-            url: '/book-demo'
-          },
-          {
-            icon: Download,
-            title: 'Download Preparation Guide',
-            description: 'Get ready for your analysis with our preparation checklist',
-            action: 'Download Guide',
-            url: '/downloads/analysis-prep-guide.pdf'
-          }
-        ]
-      
-      case 'consultation':
-        return [
-          {
-            icon: Calendar,
-            title: 'Schedule Your Strategy Session',
-            description: 'Book your 1-on-1 consultation with our automation expert',
-            action: 'Schedule Session',
-            url: '/book-demo'
-          },
-          {
-            icon: Download,
-            title: 'Pre-Consultation Worksheet',
-            description: 'Complete this worksheet to maximize your session value',
-            action: 'Download Worksheet',
-            url: '/downloads/consultation-worksheet.pdf'
-          }
-        ]
-      
-      case 'starter':
-      case 'professional':
-        return [
-          {
-            icon: Calendar,
-            title: 'Onboarding Call Scheduled',
-            description: 'Our team will contact you within 24 hours to begin setup',
-            action: 'View Calendar',
-            url: '/dashboard'
-          },
-          {
-            icon: Download,
-            title: 'Welcome Package',
-            description: 'Access your complete automation implementation guide',
-            action: 'Access Dashboard',
-            url: '/dashboard'
-          },
-          {
-            icon: Mail,
-            title: 'Dedicated Success Manager',
-            description: 'Meet your assigned automation specialist',
-            action: 'Contact Team',
-            url: '/contact'
-          }
-        ]
-      
-      default:
-        return []
-    }
+    return [
+      {
+        icon: Calendar,
+        title: 'Onboarding Call Scheduled',
+        description: 'Our team will contact you within 2 business hours to begin your AI setup',
+        action: 'Check Calendar',
+        url: '/contact'
+      },
+      {
+        icon: Download,
+        title: 'Access Your Dashboard',
+        description: 'Your FlowSupport AI dashboard is being prepared with your custom settings',
+        action: 'View Dashboard',
+        url: '/dashboard'
+      },
+      {
+        icon: Mail,
+        title: 'Dedicated Success Manager',
+        description: 'Meet your assigned AI specialist who will guide your implementation',
+        action: 'Meet Your Team',
+        url: '/contact'
+      }
+    ]
   }
 
   const nextSteps = getNextSteps()
@@ -123,27 +76,27 @@ function PaymentSuccessContent() {
               </h1>
               
               <p className="text-xl text-gray-600 mb-8">
-                Thank you for choosing AI Revenue Automation Platform. Your order has been confirmed.
+                Thank you for choosing FlowSupport AI! Your subscription has been activated and you're ready to transform your customer service.
               </p>
 
-              {product && (
-                <div className="bg-gradient-to-r from-green-50 to-blue-50 rounded-2xl p-8 mb-8">
-                  <div className="flex items-center justify-center space-x-3 mb-4">
-                    <Sparkles className="w-6 h-6 text-green-600" />
-                    <h2 className="text-2xl font-bold text-gray-900">
-                      {product.name} - Confirmed
-                    </h2>
-                  </div>
-                  <p className="text-gray-700 mb-4">{product.description}</p>
-                  {customerInfo && (
-                    <div className="text-sm text-gray-600 space-y-1">
-                      <p><strong>Order Number:</strong> {customerInfo.orderNumber}</p>
-                      <p><strong>Transaction ID:</strong> {customerInfo.transactionId}</p>
-                      <p><strong>Email:</strong> {customerInfo.email}</p>
-                    </div>
-                  )}
+              <div className="bg-gradient-to-r from-green-50 to-blue-50 rounded-2xl p-8 mb-8">
+                <div className="flex items-center justify-center space-x-3 mb-4">
+                  <Sparkles className="w-6 h-6 text-green-600" />
+                  <h2 className="text-2xl font-bold text-gray-900">
+                    {planName} Plan - Activated
+                  </h2>
                 </div>
-              )}
+                <p className="text-gray-700 mb-4">
+                  Your AI-powered customer service automation is now being set up. Get ready to save thousands in support costs while improving customer satisfaction!
+                </p>
+                {customerInfo && (
+                  <div className="text-sm text-gray-600 space-y-1">
+                    <p><strong>Order Number:</strong> {customerInfo.orderNumber}</p>
+                    <p><strong>Transaction ID:</strong> {customerInfo.transactionId}</p>
+                    <p><strong>Confirmation sent to:</strong> {customerInfo.email}</p>
+                  </div>
+                )}
+              </div>
             </motion.div>
 
             {/* Next Steps */}
@@ -206,7 +159,7 @@ function PaymentSuccessContent() {
                 Please check your inbox (and spam folder) for important information.
               </p>
               <div className="text-sm text-gray-500">
-                Didn't receive an email? Contact us at <strong>hello@airevenue.com</strong>
+                Didn't receive an email? Contact us at <strong>hello@flowsupportai.com</strong>
               </div>
             </motion.div>
 
@@ -238,9 +191,9 @@ function PaymentSuccessContent() {
               </div>
 
               <div className="mt-6 text-sm text-gray-500">
-                <p>📞 Phone: +1 (555) 123-4567</p>
+                <p>📧 Email: hello@flowsupportai.com</p>
                 <p>💬 Live chat available 24/7 on our website</p>
-                <p>📧 Email: support@airevenue.com</p>
+                <p>⚡ Our team responds within 2 hours during business hours</p>
               </div>
             </motion.div>
 

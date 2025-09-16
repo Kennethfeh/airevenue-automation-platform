@@ -194,14 +194,14 @@ function PaymentFailedContent() {
                 
                 <div className="bg-white rounded-lg border border-gray-200 p-6">
                   <CreditCard className="w-8 h-8 text-[#FF4A00] mx-auto mb-3" />
-                  <h4 className="font-semibold text-gray-900 mb-2">Phone Support</h4>
-                  <p className="text-gray-600">+1 (555) 123-4567</p>
+                  <h4 className="font-semibold text-gray-900 mb-2">Fast Response</h4>
+                  <p className="text-gray-600">We respond within 2 hours</p>
                 </div>
                 
                 <div className="bg-white rounded-lg border border-gray-200 p-6">
                   <MessageCircle className="w-8 h-8 text-[#FF4A00] mx-auto mb-3" />
                   <h4 className="font-semibold text-gray-900 mb-2">Email</h4>
-                  <p className="text-gray-600">billing@airevenue.com</p>
+                  <p className="text-gray-600">hello@flowsupportai.com</p>
                 </div>
               </div>
             </motion.div>

@@ -4,36 +4,47 @@ import { initializePaddle, Paddle } from '@paddle/paddle-js'
 
 // Paddle configuration
 export const PADDLE_CONFIG = {
-  environment: process.env.NODE_ENV === 'production' ? 'production' : 'sandbox',
-  vendorId: process.env.NEXT_PUBLIC_PADDLE_VENDOR_ID || '', // You'll add this after Paddle approval
+  environment: 'production' as const,
+  sellerId: '253274', // Your Paddle Seller ID
   apiKey: process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN || '', // Client-side token from Paddle
 }
 
-// Product configuration - you'll update these with your actual Paddle product IDs
+// Product configuration - FlowSupport AI Pricing Tiers
 export const PRODUCTS = {
-  freeAnalysis: {
-    id: 'pro_01_free_analysis', // Replace with actual Paddle product ID
-    name: 'Free Analysis',
-    price: 0,
-    description: 'Complete business automation assessment'
+  growthMonthly: {
+    id: 'pri_01hp6kvyeq30vn7a3x7tey5y7w', // Growth Plan Monthly - Replace with your Paddle product ID
+    name: 'Growth Plan',
+    price: 249,
+    description: 'Save $8,000+ monthly in support costs',
+    billing: 'monthly' as const
   },
-  consultation: {
-    id: 'pro_02_consultation', // Replace with actual Paddle product ID
-    name: 'Strategy Consultation',
-    price: 497,
-    description: '1-on-1 automation strategy session'
+  growthYearly: {
+    id: 'pri_01hp6kvyeq30vn7a3x7tey5y8w', // Growth Plan Yearly - Replace with your Paddle product ID
+    name: 'Growth Plan (Yearly)',
+    price: 2990,
+    description: 'Save $8,000+ monthly in support costs - 20% off yearly',
+    billing: 'yearly' as const
   },
-  starter: {
-    id: 'pro_03_starter', // Replace with actual Paddle product ID
-    name: 'Starter Package',
-    price: 7997,
-    description: 'Complete automation setup for small businesses'
+  professionalMonthly: {
+    id: 'pri_01hp6kvyeq30vn7a3x7tey5y9w', // Professional Plan Monthly - Replace with your Paddle product ID
+    name: 'Professional Plan',
+    price: 666,
+    description: 'Save $15,000+ monthly with advanced automation',
+    billing: 'monthly' as const
   },
-  professional: {
-    id: 'pro_04_professional', // Replace with actual Paddle product ID
-    name: 'Professional Package',
-    price: 12997,
-    description: 'Enterprise-grade automation solution'
+  professionalYearly: {
+    id: 'pri_01hp6kvyeq30vn7a3x7tey5z0w', // Professional Plan Yearly - Replace with your Paddle product ID
+    name: 'Professional Plan (Yearly)',
+    price: 7990,
+    description: 'Save $15,000+ monthly with advanced automation - 20% off yearly',
+    billing: 'yearly' as const
+  },
+  enterprise: {
+    id: 'enterprise', // Enterprise is custom pricing - contact sales
+    name: 'Enterprise Plan',
+    price: 'Custom',
+    description: 'Save $25,000+ monthly with unlimited scale',
+    billing: 'custom' as const
   }
 }
 
@@ -47,11 +58,24 @@ export const initPaddle = async (): Promise<Paddle> => {
 
   try {
     paddleInstance = await initializePaddle({
-      environment: PADDLE_CONFIG.environment as 'sandbox' | 'production',
-      token: PADDLE_CONFIG.apiKey,
+      environment: PADDLE_CONFIG.environment,
+      token: PADDLE_CONFIG.apiKey || PADDLE_CONFIG.sellerId, // Use seller ID as fallback
       eventCallback: (data) => {
-        // Handle Paddle events (optional)
+        // Handle Paddle events
         console.log('Paddle event:', data)
+
+        // Handle successful payment
+        if (data.name === 'checkout.completed') {
+          console.log('Payment completed:', data)
+          // Redirect to success page or show success message
+          window.location.href = '/payment/success'
+        }
+
+        // Handle payment failure
+        if (data.name === 'checkout.error') {
+          console.error('Payment error:', data)
+          // Handle error appropriately
+        }
       }
     })
 
@@ -124,7 +148,7 @@ export const formatPrice = (price: number): string => {
 }
 
 // Paddle webhook signature verification (for server-side)
-export const verifyPaddleWebhook = (signature: string, body: string, secret: string): boolean => {
+export const verifyPaddleWebhook = (_signature: string, _body: string, _secret: string): boolean => {
   // This would be implemented server-side for webhook verification
   // For now, returning true as placeholder
   return true

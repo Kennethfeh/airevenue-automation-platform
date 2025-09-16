@@ -1,14 +1,34 @@
 'use client'
 
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { Check, Star, ArrowRight, DollarSign, Mail, Phone } from 'lucide-react'
+import { Check, Star, ArrowRight, DollarSign, Mail, Phone, Loader2 } from 'lucide-react'
+import { openPaddleCheckout, PRODUCTS, initPaddle } from '@/lib/paddle'
 
 export const PricingSection: React.FC = () => {
+  const [isYearly, setIsYearly] = useState(false)
+  const [loadingPlan, setLoadingPlan] = useState<string | null>(null)
+  const [paddleReady, setPaddleReady] = useState(false)
+
+  // Initialize Paddle on component mount
+  useEffect(() => {
+    const initializePaddle = async () => {
+      try {
+        await initPaddle()
+        setPaddleReady(true)
+      } catch (error) {
+        console.error('Failed to initialize Paddle:', error)
+      }
+    }
+
+    initializePaddle()
+  }, [])
+
   const plans = [
     {
       name: 'Growth',
-      price: 2500,
+      monthlyPrice: 249,
+      yearlyPrice: 2990,
       description: 'Save $8,000+ monthly in support costs',
       features: [
         'Up to 5,000 inquiries/month',
@@ -22,11 +42,14 @@ export const PricingSection: React.FC = () => {
       ],
       popular: false,
       setupFee: 2500,
-      savings: '$8,000+'
+      savings: '$8,000+',
+      paddleProductMonthly: 'growthMonthly',
+      paddleProductYearly: 'growthYearly'
     },
     {
       name: 'Professional',
-      price: 4500,
+      monthlyPrice: 666,
+      yearlyPrice: 7990,
       description: 'Save $15,000+ monthly with advanced automation',
       features: [
         'Up to 15,000 inquiries/month',
@@ -40,11 +63,14 @@ export const PricingSection: React.FC = () => {
       ],
       popular: true,
       setupFee: 3500,
-      savings: '$15,000+'
+      savings: '$15,000+',
+      paddleProductMonthly: 'professionalMonthly',
+      paddleProductYearly: 'professionalYearly'
     },
     {
       name: 'Enterprise',
-      price: 'Custom',
+      monthlyPrice: 'Custom',
+      yearlyPrice: 'Custom',
       description: 'Save $25,000+ monthly with unlimited scale',
       features: [
         'Unlimited inquiries',
@@ -59,9 +85,52 @@ export const PricingSection: React.FC = () => {
       ],
       popular: false,
       setupFee: 'Custom',
-      savings: '$25,000+'
+      savings: '$25,000+',
+      paddleProductMonthly: 'enterprise',
+      paddleProductYearly: 'enterprise'
     }
   ]
+
+  const handleCheckout = async (plan: typeof plans[0]) => {
+    if (!paddleReady) {
+      alert('Payment system is loading. Please try again in a moment.')
+      return
+    }
+
+    if (plan.name === 'Enterprise') {
+      // Redirect to contact for enterprise
+      window.location.href = '/contact'
+      return
+    }
+
+    const productKey = isYearly ? plan.paddleProductYearly : plan.paddleProductMonthly
+    const product = PRODUCTS[productKey as keyof typeof PRODUCTS]
+
+    if (!product) {
+      alert('Product not found. Please contact support.')
+      return
+    }
+
+    setLoadingPlan(plan.name)
+
+    try {
+      await openPaddleCheckout({
+        productId: product.id,
+        customData: {
+          plan: plan.name,
+          billing: isYearly ? 'yearly' : 'monthly'
+        },
+        successUrl: `${window.location.origin}/payment/success?plan=${plan.name}`,
+        closeCallback: () => {
+          setLoadingPlan(null)
+        }
+      })
+    } catch (error) {
+      console.error('Checkout error:', error)
+      alert('Unable to open checkout. Please try again or contact support.')
+      setLoadingPlan(null)
+    }
+  }
 
   return (
     <section className="py-20 bg-white dark:bg-gray-950">
@@ -86,10 +155,24 @@ export const PricingSection: React.FC = () => {
           </p>
           
           <div className="inline-flex bg-gray-100 dark:bg-gray-800 rounded-xl p-1">
-            <button className="px-6 py-2 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm font-medium">
+            <button
+              onClick={() => setIsYearly(false)}
+              className={`px-6 py-2 rounded-lg font-medium transition-all ${
+                !isYearly
+                  ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'
+                  : 'text-gray-600 dark:text-gray-400'
+              }`}
+            >
               Monthly
             </button>
-            <button className="px-6 py-2 rounded-lg text-gray-600 dark:text-gray-400 font-medium">
+            <button
+              onClick={() => setIsYearly(true)}
+              className={`px-6 py-2 rounded-lg font-medium transition-all ${
+                isYearly
+                  ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'
+                  : 'text-gray-600 dark:text-gray-400'
+              }`}
+            >
               Yearly (Save 20%)
             </button>
           </div>
@@ -127,14 +210,35 @@ export const PricingSection: React.FC = () => {
                   </p>
                   
                   <div className="mb-4">
-                    <span className="text-5xl font-bold text-gray-900 dark:text-white">
-                      ${plan.price.toLocaleString()}
-                    </span>
-                    <span className="text-xl text-gray-500 dark:text-gray-400">/month</span>
+                    {plan.name !== 'Enterprise' ? (
+                      <>
+                        <span className="text-5xl font-bold text-gray-900 dark:text-white">
+                          ${isYearly
+                            ? (plan.yearlyPrice as number).toLocaleString()
+                            : (plan.monthlyPrice as number).toLocaleString()
+                          }
+                        </span>
+                        <span className="text-xl text-gray-500 dark:text-gray-400">
+                          {isYearly ? '/year' : '/month'}
+                        </span>
+                        {isYearly && (
+                          <div className="text-sm text-green-600 font-medium mt-1">
+                            Save 20% with yearly billing
+                          </div>
+                        )}
+                      </>
+                    ) : (
+                      <span className="text-5xl font-bold text-gray-900 dark:text-white">
+                        Custom
+                      </span>
+                    )}
                   </div>
-                  
+
                   <div className="text-sm text-gray-500 dark:text-gray-400">
-                    + ${plan.setupFee.toLocaleString()} setup fee
+                    {plan.name !== 'Enterprise'
+                      ? `+ $${plan.setupFee.toLocaleString()} setup fee`
+                      : 'Custom setup and pricing'
+                    }
                   </div>
                 </div>
 
@@ -164,23 +268,57 @@ export const PricingSection: React.FC = () => {
                         <span>hello@flowsupportai.com</span>
                       </a>
                     </div>
-                    <button className="w-full py-4 px-6 rounded-xl font-semibold transition-all bg-primary-600 text-white hover:bg-primary-700 shadow-lg hover:shadow-xl">
-                      Contact Sales
-                      <ArrowRight className="w-5 h-5 ml-2 inline" />
+                    <button
+                      onClick={() => handleCheckout(plan)}
+                      disabled={loadingPlan === plan.name}
+                      className="w-full py-4 px-6 rounded-xl font-semibold transition-all bg-primary-600 text-white hover:bg-primary-700 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                    >
+                      {loadingPlan === plan.name ? (
+                        <>
+                          <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                          Loading...
+                        </>
+                      ) : (
+                        <>
+                          Contact Sales
+                          <ArrowRight className="w-5 h-5 ml-2" />
+                        </>
+                      )}
                     </button>
-                    <button className="w-full py-3 px-6 rounded-xl font-medium transition-all bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white hover:bg-gray-200 dark:hover:bg-gray-600 border border-gray-300 dark:border-gray-600">
+                    <button
+                      onClick={() => window.location.href = '/contact'}
+                      className="w-full py-3 px-6 rounded-xl font-medium transition-all bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white hover:bg-gray-200 dark:hover:bg-gray-600 border border-gray-300 dark:border-gray-600"
+                    >
                       Book a Demo
                       <Phone className="w-4 h-4 ml-2 inline" />
                     </button>
                   </div>
                 ) : (
-                  <button className={`w-full py-4 px-6 rounded-xl font-semibold transition-all ${
-                    plan.popular
-                      ? 'bg-primary-600 text-white hover:bg-primary-700 shadow-lg hover:shadow-xl'
-                      : 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white hover:bg-gray-200 dark:hover:bg-gray-600'
-                  }`}>
-                    Get Started
-                    <ArrowRight className="w-5 h-5 ml-2 inline" />
+                  <button
+                    onClick={() => handleCheckout(plan)}
+                    disabled={loadingPlan === plan.name || !paddleReady}
+                    className={`w-full py-4 px-6 rounded-xl font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center ${
+                      plan.popular
+                        ? 'bg-primary-600 text-white hover:bg-primary-700 shadow-lg hover:shadow-xl'
+                        : 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white hover:bg-gray-200 dark:hover:bg-gray-600'
+                    }`}
+                  >
+                    {loadingPlan === plan.name ? (
+                      <>
+                        <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                        Processing...
+                      </>
+                    ) : !paddleReady ? (
+                      <>
+                        <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                        Loading Payment...
+                      </>
+                    ) : (
+                      <>
+                        Start Free Trial
+                        <ArrowRight className="w-5 h-5 ml-2" />
+                      </>
+                    )}
                   </button>
                 )}
               </div>
