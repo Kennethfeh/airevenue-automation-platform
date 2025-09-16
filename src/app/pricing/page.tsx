@@ -6,7 +6,7 @@ import { Check, X, Phone, Calendar, Zap, Shield, Headphones, TrendingUp } from '
 import Link from 'next/link'
 import { MainNav } from '@/components/navigation/main-nav'
 import { MainFooter } from '@/components/footer/main-footer'
-import { PricingButton } from '@/components/payments/paddle-button'
+import { openSimpleCheckoutModal } from '@/lib/simple-checkout'
 
 export default function PricingPage() {
   const [isAnnual, setIsAnnual] = useState(true)
@@ -260,16 +260,24 @@ export default function PricingPage() {
                   ))}
                 </ul>
 
-                <PricingButton
-                  productKey={plan.productKey}
-                  popular={plan.popular}
-                  onSuccess={() => {
-                    console.log(`Payment successful for ${plan.name}`)
+                <button
+                  onClick={() => {
+                    if (plan.price === 0) {
+                      // For free analysis, redirect to contact form
+                      window.location.href = '/contact'
+                    } else {
+                      // For paid plans, open simple checkout
+                      openSimpleCheckoutModal(plan.name, 'one-time', plan.price)
+                    }
                   }}
-                  onError={(error) => {
-                    console.error(`Payment failed for ${plan.name}:`, error)
-                  }}
-                />
+                  className={`w-full py-4 px-6 rounded-xl font-semibold transition-all ${
+                    plan.popular
+                      ? 'bg-gradient-to-r from-[#FF4A00] to-[#FF6B1A] text-white hover:shadow-lg hover:shadow-[#FF4A00]/25'
+                      : 'bg-gray-100 text-gray-900 hover:bg-gray-200 border border-gray-300'
+                  }`}
+                >
+                  {plan.price === 0 ? 'Get Free Analysis' : 'Get Started'}
+                </button>
               </motion.div>
             ))}
           </div>

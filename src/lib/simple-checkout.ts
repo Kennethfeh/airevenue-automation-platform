@@ -6,7 +6,7 @@
 
 export interface CheckoutInfo {
   planName: string
-  billing: 'monthly' | 'yearly'
+  billing: 'monthly' | 'yearly' | 'one-time'
   price: number
   customerName: string
   customerEmail: string
@@ -59,7 +59,7 @@ export const processSimpleCheckout = async (info: CheckoutInfo): Promise<void> =
 }
 
 // Open simple checkout modal
-export const openSimpleCheckoutModal = (planName: string, billing: 'monthly' | 'yearly', price: number) => {
+export const openSimpleCheckoutModal = (planName: string, billing: 'monthly' | 'yearly' | 'one-time', price: number) => {
   // Create modal HTML
   const modalHTML = `
     <div id="simple-checkout-modal" style="
@@ -91,7 +91,10 @@ export const openSimpleCheckoutModal = (planName: string, billing: 'monthly' | '
         <div style="background: #f3f4f6; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
           <h3 style="margin: 0 0 5px 0; color: #374151;">${planName} Plan</h3>
           <p style="margin: 0; color: #6b7280;">
-            ${billing === 'yearly' ? 'Yearly' : 'Monthly'} billing - $${price.toLocaleString()}${billing === 'yearly' ? '/year' : '/month'}
+            ${billing === 'one-time'
+              ? `One-time payment - $${price.toLocaleString()}`
+              : `${billing === 'yearly' ? 'Yearly' : 'Monthly'} billing - $${price.toLocaleString()}${billing === 'yearly' ? '/year' : '/month'}`
+            }
           </p>
         </div>
 
