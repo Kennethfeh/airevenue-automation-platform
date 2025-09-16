@@ -26,11 +26,40 @@ export default function ContactPage() {
     })
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    // Here you would typically send the form data to your backend
-    console.log('Form submitted:', formData)
-    setIsSubmitted(true)
+
+    try {
+      // Submit to Netlify Forms
+      const formElement = e.target as HTMLFormElement
+      const formDataToSubmit = new FormData(formElement)
+
+      // Add form data manually to ensure all fields are included
+      formDataToSubmit.set('name', formData.name)
+      formDataToSubmit.set('email', formData.email)
+      formDataToSubmit.set('company', formData.company)
+      formDataToSubmit.set('phone', formData.phone)
+      formDataToSubmit.set('employees', formData.employees)
+      formDataToSubmit.set('interest', formData.interest)
+      formDataToSubmit.set('message', formData.message)
+
+      const response = await fetch('/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams(formDataToSubmit as any).toString()
+      })
+
+      if (response.ok) {
+        setIsSubmitted(true)
+        // Form submissions will be sent to hello@flowsupportai.com via Netlify
+        // Configure this in your Netlify dashboard under Forms -> Settings -> Notifications
+      } else {
+        throw new Error('Form submission failed')
+      }
+    } catch (error) {
+      console.error('Error submitting form:', error)
+      alert('Sorry, there was an error submitting the form. Please try again or email us directly at hello@flowsupportai.com')
+    }
   }
 
   const contactInfo = [
@@ -56,9 +85,9 @@ export default function ContactPage() {
       icon: Mail,
       title: 'Email Addresses',
       details: [
-        'hello@airevenue.com',
-        'sales@airevenue.com',
-        'support@airevenue.com'
+        'hello@flowsupportai.com',
+        'sales@flowsupportai.com',
+        'support@flowsupportai.com'
       ]
     },
     {
@@ -151,7 +180,8 @@ export default function ContactPage() {
               >
                 <h2 className="text-2xl font-bold text-gray-900 mb-6">Send us a message</h2>
                 
-                <form onSubmit={handleSubmit} className="space-y-6">
+                <form onSubmit={handleSubmit} className="space-y-6" name="contact" method="POST" data-netlify="true">
+                  <input type="hidden" name="form-name" value="contact" />
                   <div className="grid md:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -281,7 +311,7 @@ export default function ContactPage() {
                 animate={{ opacity: 1, x: 0 }}
                 className="space-y-8"
               >
-                {contactInfo.map((info, index) => {
+                {contactInfo.map((info) => {
                   const Icon = info.icon
                   return (
                     <div key={info.title} className="flex space-x-4">
