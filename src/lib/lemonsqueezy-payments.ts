@@ -80,14 +80,25 @@ export const LEMONSQUEEZY_PRODUCTS: Record<string, LemonSqueezyProduct> = {
 
 // Initialize LemonSqueezy checkout
 export const initLemonSqueezyCheckout = (variantId: string, customData?: any) => {
-  // LemonSqueezy checkout URL format - use the standard checkout URL
-  const checkoutUrl = `https://flowsupportai.lemonsqueezy.com/checkout/buy/${variantId}`
+  // LemonSqueezy checkout URL format for flowsupportai store
+  // You can find the correct URL format in your LemonSqueezy dashboard under each product
+  // Try both formats to see which one works:
 
-  // Add success and cancel URLs as parameters
-  const params = new URLSearchParams({
-    success_url: `${typeof window !== 'undefined' ? window.location.origin : 'https://flowsupportai.com'}/payment/success`,
-    cancel_url: `${typeof window !== 'undefined' ? window.location.origin : 'https://flowsupportai.com'}/payment/failed`
-  })
+  // Format 1: Direct store checkout
+  const checkoutUrl = `https://flowsupportai.lemonsqueezy.com/buy/${variantId}`
+
+  // Alternative format if above doesn't work:
+  // const checkoutUrl = `https://flowsupportai.lemonsqueezy.com/checkout/buy/${variantId}`
+
+  // LemonSqueezy checkout URLs can include parameters for customization
+  const params = new URLSearchParams()
+
+  // Add redirect URLs (these may not work the same way as Stripe)
+  // LemonSqueezy handles redirects differently - usually configured in dashboard
+  if (typeof window !== 'undefined') {
+    params.append('checkout[custom][success_url]', `${window.location.origin}/payment/success`)
+    params.append('checkout[custom][cancel_url]', `${window.location.origin}/payment/failed`)
+  }
 
   // Add custom data if provided
   if (customData) {
@@ -96,7 +107,9 @@ export const initLemonSqueezyCheckout = (variantId: string, customData?: any) =>
     })
   }
 
-  return `${checkoutUrl}?${params.toString()}`
+  const finalUrl = params.toString() ? `${checkoutUrl}?${params.toString()}` : checkoutUrl
+  console.log('LemonSqueezy checkout URL:', finalUrl)
+  return finalUrl
 }
 
 // Open LemonSqueezy checkout in same window (better conversion)
@@ -116,17 +129,17 @@ export const openLemonSqueezyCheckout = (productKey: keyof typeof LEMONSQUEEZY_P
 
   // Open LemonSqueezy checkout with actual variant ID
   const checkoutUrl = initLemonSqueezyCheckout(product.variant_id, {
-    checkout_data: JSON.stringify({
-      custom: {
-        product_key: productKey,
-        product_name: product.name,
-        source: 'pricing_page'
-      }
-    })
+    product_key: productKey,
+    product_name: product.name,
+    source: 'pricing_page'
   })
 
   console.log('Opening LemonSqueezy checkout:', checkoutUrl)
-  window.location.href = checkoutUrl
+
+  // Show URL to user for debugging (remove this after testing)
+  if (confirm(`About to open checkout URL: ${checkoutUrl}\n\nClick OK to proceed to payment page.`)) {
+    window.location.href = checkoutUrl
+  }
 }
 
 // Create checkout session with billing options
@@ -199,4 +212,20 @@ export interface LemonSqueezyWebhookData {
 export const LEMONSQUEEZY_URLS = {
   success: `${typeof window !== 'undefined' ? window.location.origin : 'https://flowsupportai.com'}/payment/success`,
   cancel: `${typeof window !== 'undefined' ? window.location.origin : 'https://flowsupportai.com'}/payment/failed`
+}
+
+// Test function - call this from browser console to test URLs
+export const testLemonSqueezyUrls = () => {
+  console.log('Testing LemonSqueezy URLs:')
+  Object.entries(LEMONSQUEEZY_PRODUCTS).forEach(([key, product]) => {
+    if (product.variant_id !== 'contact') {
+      const url = initLemonSqueezyCheckout(product.variant_id)
+      console.log(`${key}: ${url}`)
+    }
+  })
+}
+
+// Make it available globally for testing
+if (typeof window !== 'undefined') {
+  (window as any).testLemonSqueezyUrls = testLemonSqueezyUrls
 }
