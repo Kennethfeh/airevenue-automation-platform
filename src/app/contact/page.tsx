@@ -18,6 +18,7 @@ export default function ContactPage() {
   })
   
   const [isSubmitted, setIsSubmitted] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     setFormData({
@@ -29,36 +30,57 @@ export default function ContactPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
+    // Basic validation
+    if (!formData.name.trim() || !formData.email.trim() || !formData.message.trim()) {
+      alert('Please fill in all required fields (Name, Email, and Message)')
+      return
+    }
+
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(formData.email)) {
+      alert('Please enter a valid email address')
+      return
+    }
+
+    setIsSubmitting(true)
+
     try {
-      // Submit to Netlify Forms
-      const formElement = e.target as HTMLFormElement
-      const formDataToSubmit = new FormData(formElement)
-
-      // Add form data manually to ensure all fields are included
-      formDataToSubmit.set('name', formData.name)
-      formDataToSubmit.set('email', formData.email)
-      formDataToSubmit.set('company', formData.company)
-      formDataToSubmit.set('phone', formData.phone)
-      formDataToSubmit.set('employees', formData.employees)
-      formDataToSubmit.set('interest', formData.interest)
-      formDataToSubmit.set('message', formData.message)
-
       const response = await fetch('/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: new URLSearchParams(formDataToSubmit as any).toString()
+        body: new URLSearchParams({
+          'form-name': 'contact',
+          'name': formData.name.trim(),
+          'email': formData.email.trim(),
+          'company': formData.company.trim(),
+          'phone': formData.phone.trim(),
+          'employees': formData.employees,
+          'interest': formData.interest,
+          'message': formData.message.trim()
+        }).toString()
       })
 
       if (response.ok) {
         setIsSubmitted(true)
-        // Form submissions will be sent to hello@flowsupportai.com via Netlify
-        // Configure this in your Netlify dashboard under Forms -> Settings -> Notifications
+        // Reset form data
+        setFormData({
+          name: '',
+          email: '',
+          company: '',
+          phone: '',
+          employees: '',
+          message: '',
+          interest: 'general'
+        })
       } else {
-        throw new Error('Form submission failed')
+        throw new Error(`Form submission failed with status: ${response.status}`)
       }
     } catch (error) {
       console.error('Error submitting form:', error)
-      alert('Sorry, there was an error submitting the form. Please try again or email us directly at hello@flowsupportai.com')
+      alert('Sorry, there was an error submitting the form. Please try again or contact us directly at hello@flowsupportai.com')
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
@@ -141,7 +163,22 @@ export default function ContactPage() {
   return (
     <div className="min-h-screen bg-white">
       <MainNav />
-      
+
+      {/* Hidden form for Netlify form detection */}
+      <form name="contact" netlify hidden>
+        <input type="text" name="name" />
+        <input type="email" name="email" />
+        <input type="text" name="company" />
+        <input type="tel" name="phone" />
+        <select name="employees">
+          <option value="1-10">1-10 employees</option>
+        </select>
+        <select name="interest">
+          <option value="general">General inquiry</option>
+        </select>
+        <textarea name="message"></textarea>
+      </form>
+
       {/* Hero Section */}
       <section className="bg-gradient-to-r from-gray-50 to-white py-20">
         <div className="container-xl px-4 sm:px-6 lg:px-8">
@@ -180,7 +217,7 @@ export default function ContactPage() {
               >
                 <h2 className="text-2xl font-bold text-gray-900 mb-6">Send us a message</h2>
                 
-                <form onSubmit={handleSubmit} className="space-y-6" name="contact" method="POST" data-netlify="true">
+                <form onSubmit={handleSubmit} className="space-y-6">
                   <input type="hidden" name="form-name" value="contact" />
                   <div className="grid md:grid-cols-2 gap-4">
                     <div>
@@ -297,9 +334,14 @@ export default function ContactPage() {
 
                   <button
                     type="submit"
-                    className="w-full bg-[#FF4A00] text-white px-6 py-4 rounded-lg font-semibold hover:bg-[#FF3A00] transition-colors flex items-center justify-center"
+                    disabled={isSubmitting}
+                    className={`w-full px-6 py-4 rounded-lg font-semibold transition-colors flex items-center justify-center ${
+                      isSubmitting
+                        ? 'bg-gray-400 cursor-not-allowed'
+                        : 'bg-[#FF4A00] hover:bg-[#FF3A00] text-white'
+                    }`}
                   >
-                    Send Message
+                    {isSubmitting ? 'Sending...' : 'Send Message'}
                     <Send className="w-5 h-5 ml-2" />
                   </button>
                 </form>
