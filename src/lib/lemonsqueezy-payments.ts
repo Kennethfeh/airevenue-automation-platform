@@ -1,7 +1,7 @@
 'use client'
 
-// LemonSqueezy Payment Integration
-// Global card payments for all countries including Korea
+// LemonSqueezy Embedded Checkout Integration
+// Global card payments with embedded overlay - customers stay on your site
 
 export interface LemonSqueezyProduct {
   id: string
@@ -14,7 +14,7 @@ export interface LemonSqueezyProduct {
 }
 
 // LemonSqueezy Product Configuration
-// Updated with actual LemonSqueezy variant IDs
+// Updated with LemonSqueezy buy URLs for embedded checkout
 export const LEMONSQUEEZY_PRODUCTS: Record<string, LemonSqueezyProduct> = {
   freeAnalysis: {
     id: 'free-analysis',
@@ -28,7 +28,7 @@ export const LEMONSQUEEZY_PRODUCTS: Record<string, LemonSqueezyProduct> = {
     name: 'Strategy Consultation',
     description: '90-minute expert consultation',
     price: 497,
-    variant_id: '637093' // Strategy consultation - one-time payment
+    variant_id: 'CONSULTATION_UUID_HERE' // Replace with actual UUID
   },
   growthMonthly: {
     id: 'growth-monthly',
@@ -36,7 +36,7 @@ export const LEMONSQUEEZY_PRODUCTS: Record<string, LemonSqueezyProduct> = {
     description: 'Monthly subscription for growth plan',
     price: 249,
     monthlyPrice: 249,
-    variant_id: '637093'
+    variant_id: 'GROWTH_MONTHLY_UUID_HERE' // Replace with actual UUID
   },
   growthYearly: {
     id: 'growth-yearly',
@@ -44,7 +44,7 @@ export const LEMONSQUEEZY_PRODUCTS: Record<string, LemonSqueezyProduct> = {
     description: 'Yearly subscription for growth plan',
     price: 2990,
     yearlyPrice: 2990,
-    variant_id: '637091'
+    variant_id: '966317ea-4d59-4148-830f-8b2caee06d32' // Your actual UUID
   },
   professionalMonthly: {
     id: 'professional-monthly',
@@ -52,7 +52,7 @@ export const LEMONSQUEEZY_PRODUCTS: Record<string, LemonSqueezyProduct> = {
     description: 'Monthly subscription for professional plan',
     price: 666,
     monthlyPrice: 666,
-    variant_id: '637094'
+    variant_id: 'PROFESSIONAL_MONTHLY_UUID_HERE' // Replace with actual UUID
   },
   professionalYearly: {
     id: 'professional-yearly',
@@ -60,60 +60,50 @@ export const LEMONSQUEEZY_PRODUCTS: Record<string, LemonSqueezyProduct> = {
     description: 'Yearly subscription for professional plan',
     price: 7990,
     yearlyPrice: 7990,
-    variant_id: '637095'
+    variant_id: 'PROFESSIONAL_YEARLY_UUID_HERE' // Replace with actual UUID
   },
   starter: {
     id: 'starter-package',
     name: 'Starter Package',
     description: 'Complete automation setup',
     price: 7997,
-    variant_id: '637094' // Using professional monthly as starter
+    variant_id: 'GROWTH_MONTHLY_UUID_HERE' // Map to growth monthly
   },
   professional: {
     id: 'professional-package',
     name: 'Professional Package',
     description: 'Enterprise automation solution',
     price: 12997,
-    variant_id: '637095' // Using professional yearly as professional package
+    variant_id: 'PROFESSIONAL_YEARLY_UUID_HERE' // Map to professional yearly
   }
 }
 
-// Initialize LemonSqueezy checkout
-export const initLemonSqueezyCheckout = (variantId: string, customData?: any) => {
-  // LemonSqueezy checkout URL format for flowsupportai store
-  // You can find the correct URL format in your LemonSqueezy dashboard under each product
-  // Try both formats to see which one works:
+// Load LemonSqueezy script
+export const loadLemonSqueezyScript = (): Promise<void> => {
+  return new Promise((resolve, reject) => {
+    if (typeof window === 'undefined') {
+      reject(new Error('Window is not defined'))
+      return
+    }
 
-  // Format 1: Direct store checkout
-  const checkoutUrl = `https://flowsupportai.lemonsqueezy.com/buy/${variantId}`
+    // Check if script is already loaded
+    if (document.querySelector('script[src="https://assets.lemonsqueezy.com/lemon.js"]')) {
+      resolve()
+      return
+    }
 
-  // Alternative format if above doesn't work:
-  // const checkoutUrl = `https://flowsupportai.lemonsqueezy.com/checkout/buy/${variantId}`
+    const script = document.createElement('script')
+    script.src = 'https://assets.lemonsqueezy.com/lemon.js'
+    script.defer = true
+    script.onload = () => resolve()
+    script.onerror = () => reject(new Error('Failed to load LemonSqueezy script'))
 
-  // LemonSqueezy checkout URLs can include parameters for customization
-  const params = new URLSearchParams()
-
-  // Add redirect URLs (these may not work the same way as Stripe)
-  // LemonSqueezy handles redirects differently - usually configured in dashboard
-  if (typeof window !== 'undefined') {
-    params.append('checkout[custom][success_url]', `${window.location.origin}/payment/success`)
-    params.append('checkout[custom][cancel_url]', `${window.location.origin}/payment/failed`)
-  }
-
-  // Add custom data if provided
-  if (customData) {
-    Object.entries(customData).forEach(([key, value]) => {
-      params.append(key, String(value))
-    })
-  }
-
-  const finalUrl = params.toString() ? `${checkoutUrl}?${params.toString()}` : checkoutUrl
-  console.log('LemonSqueezy checkout URL:', finalUrl)
-  return finalUrl
+    document.head.appendChild(script)
+  })
 }
 
-// Open LemonSqueezy checkout in same window (better conversion)
-export const openLemonSqueezyCheckout = (productKey: keyof typeof LEMONSQUEEZY_PRODUCTS) => {
+// Open LemonSqueezy embedded checkout overlay
+export const openLemonSqueezyCheckout = async (productKey: keyof typeof LEMONSQUEEZY_PRODUCTS) => {
   const product = LEMONSQUEEZY_PRODUCTS[productKey]
 
   if (!product) {
@@ -127,18 +117,42 @@ export const openLemonSqueezyCheckout = (productKey: keyof typeof LEMONSQUEEZY_P
     return
   }
 
-  // Open LemonSqueezy checkout with actual variant ID
-  const checkoutUrl = initLemonSqueezyCheckout(product.variant_id, {
-    product_key: productKey,
-    product_name: product.name,
-    source: 'pricing_page'
-  })
+  // Check if variant ID is configured
+  if (product.variant_id.includes('UUID_HERE')) {
+    alert(`Payment for ${product.name} is not yet configured. Please contact hello@flowsupportai.com`)
+    return
+  }
 
-  console.log('Opening LemonSqueezy checkout:', checkoutUrl)
+  try {
+    // Load LemonSqueezy script if not already loaded
+    await loadLemonSqueezyScript()
 
-  // Show URL to user for debugging (remove this after testing)
-  if (confirm(`About to open checkout URL: ${checkoutUrl}\n\nClick OK to proceed to payment page.`)) {
-    window.location.href = checkoutUrl
+    // Create the checkout URL
+    const checkoutUrl = `https://flowsupportai.lemonsqueezy.com/buy/${product.variant_id}?embed=1`
+
+    console.log('Opening LemonSqueezy embedded checkout:', checkoutUrl)
+
+    // Open the embedded checkout overlay
+    if ((window as any).createLemonSqueezyAffiliate) {
+      // Use LemonSqueezy's embedded checkout
+      (window as any).LemonSqueezy.Url.Open(checkoutUrl)
+    } else {
+      // Fallback: create a hidden link and click it (this triggers the overlay)
+      const link = document.createElement('a')
+      link.href = checkoutUrl
+      link.className = 'lemonsqueezy-button'
+      link.style.display = 'none'
+      link.textContent = `Buy ${product.name}`
+
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+    }
+
+  } catch (error) {
+    console.error('Failed to open LemonSqueezy checkout:', error)
+    // Fallback to direct URL
+    window.open(`https://flowsupportai.lemonsqueezy.com/buy/${product.variant_id}`, '_blank')
   }
 }
 
@@ -171,11 +185,7 @@ export const createLemonSqueezyCheckout = (
     product,
     variantId,
     price,
-    checkoutUrl: initLemonSqueezyCheckout(variantId, {
-      billing_cycle: billing,
-      product_name: product.name,
-      amount: price
-    })
+    checkoutUrl: `https://flowsupportai.lemonsqueezy.com/buy/${variantId}?embed=1`
   }
 }
 
@@ -218,8 +228,8 @@ export const LEMONSQUEEZY_URLS = {
 export const testLemonSqueezyUrls = () => {
   console.log('Testing LemonSqueezy URLs:')
   Object.entries(LEMONSQUEEZY_PRODUCTS).forEach(([key, product]) => {
-    if (product.variant_id !== 'contact') {
-      const url = initLemonSqueezyCheckout(product.variant_id)
+    if (product.variant_id !== 'contact' && !product.variant_id.includes('UUID_HERE')) {
+      const url = `https://flowsupportai.lemonsqueezy.com/buy/${product.variant_id}?embed=1`
       console.log(`${key}: ${url}`)
     }
   })
